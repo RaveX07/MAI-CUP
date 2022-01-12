@@ -2,28 +2,32 @@
 #include <Adafruit_VL53L0X.h>
 
 //right motor
-#define RIGHT_PWM_PIN_FORWARD 5
-#define RIGHT_PWM_PIN_BACKWARD 4
-#define RIGHT_EN_PIN_RIGHT 7
-#define RIGHT_EN_PIN_LEFT 6
+#define PWM_PIN_FORWARD_RIGHT 5
+#define PWM_PIN_BACKWARD_RIGHT 4
+#define ENABLE_PIN_RIGHT_1 7
+#define ENABLE_PIN_RIGHT_2 6
 
 //left motor
-#define LEFT_PWM_PIN_FORWARD 9
-#define LEFT_PWM_PIN_BACKWARD 8
-#define LEFT_EN_PIN_RIGHT 11
-#define LEFT_EN_PIN_LEFT 10
+#define PWM_PIN_FORWARD_LEFT 9
+#define PWM_PIN_BACKWARD_LEFT 8
+#define ENABLE_PIN_LEFT_1 11
+#define ENABLE_PIN_LEFT_2 10
 
 //ir sensors 
-#define LEFT_IR_SENSOR A0
-#define RIGHT_IR_SENSOR A1
+#define IR_SENSOR_LEFT A0
+#define IR_SENSOR_RIGHT A1
 
 //variables for IR-Sensors
 bool leftIRSensor;
 bool rightIRSensor;
 
 //hall sensors 
-#define LEFT_HALL_SENSOR 12
-#define RIGHT_HALL_SENSOR 13
+#define HALL_SENSOR_LEFT 12
+#define HALL_SENSOR_RIGHT 13
+
+//variables for the hall-sensors
+bool magnetDetectedLeft = false;
+bool magnetDetectedRight = false;
 
 //variables for the TOF-Sensors
 int distanceLeft = 0;
@@ -147,7 +151,7 @@ void read_tof_sensors() {
 }
 
 void readIRSensors(){
-  if(digitalRead(LEFT_IR_SENSOR) == LOW){
+  if(digitalRead(IR_SENSOR_LEFT) == LOW){
     
     leftIRSensor = true;
 
@@ -157,7 +161,7 @@ void readIRSensors(){
 
   }
 
-  if(digitalRead(RIGHT_IR_SENSOR) == LOW){
+  if(digitalRead(IR_SENSOR_RIGHT) == LOW){
     
     rightIRSensor = true;
 
@@ -169,6 +173,50 @@ void readIRSensors(){
 
 }
 
+void readHallSensors(){
+  if(digitalRead(HALL_SENSOR_LEFT) == HIGH){
+    magnetDetectedLeft = true;
+
+  }else {
+    magnetDetectedLeft = false;
+
+  }
+
+  if(digitalRead(HALL_SENSOR_RIGHT) == HIGH){
+    magnetDetectedRight = true;
+
+  }else {
+    magnetDetectedRight = false;
+
+  }
+}
+
+
+
+void drive(int speed){
+  digitalWrite(PWM_PIN_FORWARD_RIGHT, speed);
+  digitalWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+  digitalWrite(PWM_PIN_FORWARD_LEFT, speed);
+  digitalWrite(PWM_PIN_BACKWARD_LEFT, 0);
+
+}
+
+void turn(char direction){
+  if(direction == 'r'){
+    digitalWrite(PWM_PIN_FORWARD_RIGHT, 0);
+    digitalWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+    digitalWrite(PWM_PIN_FORWARD_LEFT, 50);
+    digitalWrite(PWM_PIN_BACKWARD_LEFT, 0);
+  }else if(direction == 'l'){
+    digitalWrite(PWM_PIN_FORWARD_RIGHT, 50);
+    digitalWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+    digitalWrite(PWM_PIN_FORWARD_LEFT, 0);
+    digitalWrite(PWM_PIN_BACKWARD_LEFT, 0);
+  }
+  
+
+}
+
 
 void setup() {
   Serial.begin(115200);
@@ -176,8 +224,8 @@ void setup() {
   // wait until serial port opens for native USB devices
   while (! Serial) { delay(1); }
 
-  pinMode(LEFT_IR_SENSOR, INPUT);
-  pinMode(RIGHT_IR_SENSOR, INPUT);
+  pinMode(IR_SENSOR_LEFT, INPUT);
+  pinMode(IR_SENSOR_RIGHT, INPUT);
 
   pinMode(SHT_LOX_LEFT, OUTPUT);
   pinMode(SHT_LOX_RIGHT, OUTPUT);
@@ -194,9 +242,15 @@ void setup() {
   
   Serial.println(F("Starting TOF-Sensors..."));
   setID();  
+
+  digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
+  digitalWrite(ENABLE_PIN_LEFT_2, HIGH);
+  digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
+  digitalWrite(ENABLE_PIN_RIGHT_2, HIGH);
+
 }
 
 void loop() {
   read_tof_sensors();
-  delay(100);
+  delay(50);
 }
