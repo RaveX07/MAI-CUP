@@ -267,6 +267,30 @@ void loop() {
   readHallSensors();
   readIRSensors();
 
+  if(magnetDetectedLeft){
+    while(distanceRight < 40){
+      drive(75);
+    }
+    while(true)
+    {
+      if(distanceRight <= distanceLeft + 5 && distanceRight >= distanceLeft - 5){
+        break;
+      }
+      turnCustom('r', 75, 55);
+    }
+  } else if(magnetDetectedRight){
+    while(distanceLeft < 40){
+      drive(75);
+    }
+    while(true){
+      if(distanceLeft <= distanceRight + 5 && distanceLeft >= distanceRight - 5){
+        break;
+      }
+      turnCustom('l', 75, 55);
+    }
+  }
+
+
   if(rightIRSensor == false && leftIRSensor == false){
     if(distanceRight < distanceLeft){
       turnCustom('l', 80, 65);
