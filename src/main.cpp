@@ -5,13 +5,11 @@
 #define PWM_PIN_FORWARD_RIGHT 5
 #define PWM_PIN_BACKWARD_RIGHT 4
 #define ENABLE_PIN_RIGHT_1 7
-#define ENABLE_PIN_RIGHT_2 6
 
 //left motor
 #define PWM_PIN_FORWARD_LEFT 9
 #define PWM_PIN_BACKWARD_LEFT 8
 #define ENABLE_PIN_LEFT_1 11
-#define ENABLE_PIN_LEFT_2 10
 
 //ir sensors 
 #define IR_SENSOR_LEFT A0
@@ -194,24 +192,40 @@ void readHallSensors(){
 
 
 void drive(int speed){
-  digitalWrite(PWM_PIN_FORWARD_RIGHT, speed);
-  digitalWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-  digitalWrite(PWM_PIN_FORWARD_LEFT, speed);
-  digitalWrite(PWM_PIN_BACKWARD_LEFT, 0);
+  analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
+  analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+  analogWrite(PWM_PIN_FORWARD_LEFT, speed);
+  analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
 
 }
 
-void turn(char direction){
+void turn90(char direction){
   if(direction == 'r'){
-    digitalWrite(PWM_PIN_FORWARD_RIGHT, 0);
-    digitalWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-    digitalWrite(PWM_PIN_FORWARD_LEFT, 50);
-    digitalWrite(PWM_PIN_BACKWARD_LEFT, 0);
+    analogWrite(PWM_PIN_FORWARD_RIGHT, 0);
+    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+    analogWrite(PWM_PIN_FORWARD_LEFT, 75);
+    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
   }else if(direction == 'l'){
-    digitalWrite(PWM_PIN_FORWARD_RIGHT, 50);
-    digitalWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-    digitalWrite(PWM_PIN_FORWARD_LEFT, 0);
-    digitalWrite(PWM_PIN_BACKWARD_LEFT, 0);
+    analogWrite(PWM_PIN_FORWARD_RIGHT, 75);
+    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+    analogWrite(PWM_PIN_FORWARD_LEFT, 0);
+    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
+  }
+  
+
+}
+
+void turnCustom(char direction, int speedMax, int speedMin){
+  if(direction == 'r'){
+    analogWrite(PWM_PIN_FORWARD_RIGHT, speedMin);
+    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+    analogWrite(PWM_PIN_FORWARD_LEFT, speedMax);
+    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
+  }else if(direction == 'l'){
+    analogWrite(PWM_PIN_FORWARD_RIGHT, speedMax);
+    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+    analogWrite(PWM_PIN_FORWARD_LEFT, speedMin);
+    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
   }
   
 
@@ -244,13 +258,69 @@ void setup() {
   setID();  
 
   digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
-  digitalWrite(ENABLE_PIN_LEFT_2, HIGH);
   digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
-  digitalWrite(ENABLE_PIN_RIGHT_2, HIGH);
 
 }
 
 void loop() {
   read_tof_sensors();
+  readHallSensors();
+  readIRSensors();
+
+  if(rightIRSensor == false && leftIRSensor == false){
+    if(distanceRight < distanceLeft){
+      turnCustom('l', 80, 65);
+    } else if(distanceRight > distanceLeft){
+      turnCustom('r', 80, 65);
+    }
+  } else if(rightIRSensor == true && leftIRSensor == false){
+    while(distanceRight < 40){
+      drive(75);
+    }
+    while(true)
+    {
+      if(distanceRight <= distanceLeft + 5 && distanceRight >= distanceLeft - 5){
+        break;
+      }
+      turnCustom('r', 75, 55);
+    }
+  } else if(rightIRSensor == false && leftIRSensor == true){
+    while(distanceLeft < 40){
+      drive(75);
+    }
+    while(true){
+      if(distanceLeft <= distanceRight + 5 && distanceLeft >= distanceRight - 5){
+        break;
+      }
+      turnCustom('l', 75, 55);
+    }
+    
+  }
+
+
+  if(distanceMiddle < 30){
+    while(distanceLeft < 40 && distanceRight < 40){
+      drive(75);
+    }
+
+    if(distanceLeft >= 40){
+      while(true){
+      if(distanceLeft <= distanceRight + 5 && distanceLeft >= distanceRight - 5){
+        break;
+      }
+      turnCustom('l', 75, 55);
+      }
+    } else if(distanceRight >= 40){
+      while(true){
+      if(distanceRight <= distanceLeft + 5 && distanceRight >= distanceLeft - 5){
+        break;
+      }
+      turnCustom('r', 75, 55);
+      }
+    }
+
+  }
+
+
   delay(50);
 }
