@@ -199,22 +199,6 @@ void drive(int speed){
 
 }
 
-void turn90(char direction){
-  if(direction == 'r'){
-    analogWrite(PWM_PIN_FORWARD_RIGHT, 0);
-    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-    analogWrite(PWM_PIN_FORWARD_LEFT, 75);
-    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
-  }else if(direction == 'l'){
-    analogWrite(PWM_PIN_FORWARD_RIGHT, 75);
-    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-    analogWrite(PWM_PIN_FORWARD_LEFT, 0);
-    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
-  }
-  
-
-}
-
 void turnCustom(char direction, int speedMax, int speedMin){
   if(direction == 'r'){
     analogWrite(PWM_PIN_FORWARD_RIGHT, speedMin);
@@ -226,6 +210,22 @@ void turnCustom(char direction, int speedMax, int speedMin){
     analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
     analogWrite(PWM_PIN_FORWARD_LEFT, speedMin);
     analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
+  }
+  
+
+}
+
+void rotate(char direction, int speed){
+  if(direction == 'r'){
+    analogWrite(PWM_PIN_FORWARD_RIGHT, 0);
+    analogWrite(PWM_PIN_BACKWARD_RIGHT, speed);
+    analogWrite(PWM_PIN_FORWARD_LEFT, speed);
+    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
+  }else if(direction == 'l'){
+    analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
+    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+    analogWrite(PWM_PIN_FORWARD_LEFT, 0);
+    analogWrite(PWM_PIN_BACKWARD_LEFT, speed);
   }
   
 
@@ -263,61 +263,64 @@ void setup() {
 }
 
 void loop() {
-  read_tof_sensors();
+  read_tof_sensors();                 //read all sensors
   readHallSensors();
   readIRSensors();
 
-  if(magnetDetectedLeft){
-    while(distanceRight < 40){
+  
+  if(magnetDetectedLeft){             //if magnet is detected on the right
+    while(distanceRight < 40){        //while no curve is detected: drive forward
       drive(75);
     }
-    while(true)
-    {
-      if(distanceRight <= distanceLeft + 5 && distanceRight >= distanceLeft - 5){
-        break;
-      }
-      turnCustom('r', 75, 55);
-    }
-  } else if(magnetDetectedRight){
-    while(distanceLeft < 40){
+
+    delay(200);                       //keep driving forward for 0.2 seconds
+
+    rotate('r', 70);
+
+    delay(500);                       //rotate for 0.5 seconds
+    
+  } else if(magnetDetectedRight){     //if magnet is detected on the right   
+    while(distanceLeft < 40){         //while no curve is detected: drive forward
       drive(75);
     }
-    while(true){
-      if(distanceLeft <= distanceRight + 5 && distanceLeft >= distanceRight - 5){
-        break;
-      }
-      turnCustom('l', 75, 55);
-    }
+
+    delay(200);                       //keep driving forward for 0.2 seconds
+
+    rotate('l', 70);                  
+
+    delay(500);                       //rotate for 0.5 seconds
   }
 
 
-  if(rightIRSensor == false && leftIRSensor == false){
+  if(rightIRSensor == false && leftIRSensor == false){  //if there's no black line detected
     if(distanceRight < distanceLeft){
-      turnCustom('l', 80, 65);
+      turnCustom('l', 80, 65);        //if distance to wall is higher on the right, turn a bit to the left
+
     } else if(distanceRight > distanceLeft){
-      turnCustom('r', 80, 65);
+      turnCustom('r', 80, 65);        //if distance to wall is higher on the right, turn a bit to the right
+
     }
-  } else if(rightIRSensor == true && leftIRSensor == false){
-    while(distanceRight < 40){
+  } else if(rightIRSensor == true && leftIRSensor == false){  //if there's a black line on the right
+    while(distanceRight < 40){         //while no curve is detected: drive forward
       drive(75);
     }
-    while(true)
-    {
-      if(distanceRight <= distanceLeft + 5 && distanceRight >= distanceLeft - 5){
-        break;
-      }
-      turnCustom('r', 75, 55);
-    }
+
+    delay(200);                       //keep driving forward for 0.2 seconds
+
+    rotate('r', 70);                  
+
+    delay(500);                       //rotate for 0.5 seconds
+
   } else if(rightIRSensor == false && leftIRSensor == true){
-    while(distanceLeft < 40){
+    while(distanceLeft < 40){         //while no curve is detected: drive forward
       drive(75);
     }
-    while(true){
-      if(distanceLeft <= distanceRight + 5 && distanceLeft >= distanceRight - 5){
-        break;
-      }
-      turnCustom('l', 75, 55);
-    }
+
+    delay(200);                       //keep driving forward for 0.2 seconds
+
+    rotate('l', 70);                  
+
+    delay(500);                       //rotate for 0.5 seconds
     
   }
 
@@ -327,24 +330,20 @@ void loop() {
       drive(75);
     }
 
+    delay(200);                       //keep driving forward for 0.2 seconds
+
     if(distanceLeft >= 40){
-      while(true){
-      if(distanceLeft <= distanceRight + 5 && distanceLeft >= distanceRight - 5){
-        break;
-      }
-      turnCustom('l', 75, 55);
-      }
+      rotate('l', 70);                  
+
+      delay(500);                       //rotate for 0.5 seconds
+
     } else if(distanceRight >= 40){
-      while(true){
-      if(distanceRight <= distanceLeft + 5 && distanceRight >= distanceLeft - 5){
-        break;
-      }
-      turnCustom('r', 75, 55);
-      }
+      rotate('r', 70);                  
+
+      delay(500);                       //rotate for 0.5 seconds
     }
 
   }
-
-
   delay(50);
+
 }
