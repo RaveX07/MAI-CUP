@@ -16,8 +16,11 @@
 #define IR_SENSOR_RIGHT A1
 
 //variables for IR-Sensors
-bool leftIRSensor;
-bool rightIRSensor;
+int leftIRSensor;
+int rightIRSensor;
+
+bool lineLeft;
+bool lineRight;
 
 //hall sensors 
 #define HALL_SENSOR_LEFT 12
@@ -33,9 +36,9 @@ int distanceRight = 0;
 int distanceMiddle = 0;
 
 // address we will assign if dual sensor is present
-#define LOX_ADDRESS_LEFT 0x30
-#define LOX_ADDRESS_RIGHT 0x31
-#define LOX_ADDRESS_MIDDLE 0x32
+#define LOX_ADDRESS_LEFT 0x52
+#define LOX_ADDRESS_RIGHT 0x53
+#define LOX_ADDRESS_MIDDLE 0x54
 
 // set the pins to shutdown
 #define SHT_LOX_LEFT 22
@@ -51,6 +54,7 @@ Adafruit_VL53L0X loxRight = Adafruit_VL53L0X();
 VL53L0X_RangingMeasurementData_t measureLeft;
 VL53L0X_RangingMeasurementData_t measureRight;
 VL53L0X_RangingMeasurementData_t measureMiddle;
+
 
 
 /*
@@ -149,23 +153,22 @@ void read_tof_sensors() {
 }
 
 void readIRSensors(){
-  if(digitalRead(IR_SENSOR_LEFT) == LOW){
-    
-    leftIRSensor = true;
+  leftIRSensor = analogRead(IR_SENSOR_LEFT);
+  rightIRSensor = analogRead(IR_SENSOR_RIGHT);
 
-  } else{
+  if (leftIRSensor >= 750){
+    lineLeft = true;
 
-    leftIRSensor = false;
+  } else {
+    lineLeft = false;
 
   }
 
-  if(digitalRead(IR_SENSOR_RIGHT) == LOW){
-    
-    rightIRSensor = true;
+  if (rightIRSensor >= 750){
+    lineRight = true;
 
-  } else{
-
-    rightIRSensor = false;
+  } else {
+    lineRight = false;
 
   }
 
@@ -236,10 +239,12 @@ void setup() {
   Serial.begin(115200);
 
   // wait until serial port opens for native USB devices
-  while (! Serial) { delay(1); }
 
   pinMode(IR_SENSOR_LEFT, INPUT);
   pinMode(IR_SENSOR_RIGHT, INPUT);
+
+  pinMode(HALL_SENSOR_LEFT, INPUT);
+  pinMode(HALL_SENSOR_RIGHT, INPUT);
 
   pinMode(SHT_LOX_LEFT, OUTPUT);
   pinMode(SHT_LOX_RIGHT, OUTPUT);
@@ -269,7 +274,7 @@ void loop() {
 
   
   if(magnetDetectedLeft){             //if magnet is detected on the right
-    while(distanceRight < 40){        //while no curve is detected: drive forward
+    while(distanceRight < 400){        //while no curve is detected: drive forward
       drive(75);
     }
 
@@ -278,9 +283,13 @@ void loop() {
     rotate('r', 70);
 
     delay(500);                       //rotate for 0.5 seconds
+
+    drive(75);                        //drive forward for 0.5 seconds
+
+    delay(500);
     
   } else if(magnetDetectedRight){     //if magnet is detected on the right   
-    while(distanceLeft < 40){         //while no curve is detected: drive forward
+    while(distanceLeft < 400){         //while no curve is detected: drive forward
       drive(75);
     }
 
@@ -289,10 +298,14 @@ void loop() {
     rotate('l', 70);                  
 
     delay(500);                       //rotate for 0.5 seconds
+
+    drive(75);                        //drive forward for 0.5 seconds
+
+    delay(500);
   }
 
 
-  if(rightIRSensor == false && leftIRSensor == false){  //if there's no black line detected
+  if(lineRight == false && lineLeft == false){  //if there's no black line detected
     if(distanceRight < distanceLeft){
       turnCustom('l', 80, 65);        //if distance to wall is higher on the right, turn a bit to the left
 
@@ -300,8 +313,8 @@ void loop() {
       turnCustom('r', 80, 65);        //if distance to wall is higher on the right, turn a bit to the right
 
     }
-  } else if(rightIRSensor == true && leftIRSensor == false){  //if there's a black line on the right
-    while(distanceRight < 40){         //while no curve is detected: drive forward
+  } else if(lineRight == true && lineLeft == false){  //if there's a black line on the right
+    while(distanceRight < 400){         //while no curve is detected: drive forward
       drive(75);
     }
 
@@ -311,8 +324,13 @@ void loop() {
 
     delay(500);                       //rotate for 0.5 seconds
 
-  } else if(rightIRSensor == false && leftIRSensor == true){
-    while(distanceLeft < 40){         //while no curve is detected: drive forward
+    drive(75);                        //drive forward for 0.5 seconds
+
+    delay(500);
+
+
+  } else if(lineRight == false && lineLeft == true){
+    while(distanceLeft < 400){         //while no curve is detected: drive forward
       drive(75);
     }
 
@@ -321,26 +339,39 @@ void loop() {
     rotate('l', 70);                  
 
     delay(500);                       //rotate for 0.5 seconds
+
+    drive(75);                        //drive forward for 0.5 seconds
+
+    delay(500);
     
   }
 
 
   if(distanceMiddle < 30){
-    while(distanceLeft < 40 && distanceRight < 40){
+    while(distanceLeft < 400 && distanceRight < 400){
       drive(75);
     }
 
     delay(200);                       //keep driving forward for 0.2 seconds
 
-    if(distanceLeft >= 40){
+    if(distanceLeft >= 400){
       rotate('l', 70);                  
 
       delay(500);                       //rotate for 0.5 seconds
 
-    } else if(distanceRight >= 40){
+      drive(75);                        //drive forward for 0.5 seconds
+
+      delay(500);
+
+    } else if(distanceRight >= 400){
       rotate('r', 70);                  
 
       delay(500);                       //rotate for 0.5 seconds
+
+      drive(75);                        //drive forward for 0.5 seconds
+
+      delay(500);
+
     }
 
   }
