@@ -16,8 +16,8 @@
 #define IR_SENSOR_RIGHT A1
 
 //variables for IR-Sensors
-int leftIRSensor;
-int rightIRSensor;
+int IRSensorLeft;
+int IRSensorRight;
 
 bool lineLeft;
 bool lineRight;
@@ -153,10 +153,10 @@ void read_tof_sensors() {
 }
 
 void readIRSensors(){
-  leftIRSensor = analogRead(IR_SENSOR_LEFT);
-  rightIRSensor = analogRead(IR_SENSOR_RIGHT);
+  IRSensorLeft = analogRead(IR_SENSOR_LEFT);
+  IRSensorRight = analogRead(IR_SENSOR_RIGHT);
 
-  if (leftIRSensor >= 750){
+  if (IRSensorLeft >= 750){
     lineLeft = true;
 
   } else {
@@ -164,7 +164,7 @@ void readIRSensors(){
 
   }
 
-  if (rightIRSensor >= 750){
+  if (IRSensorRight >= 750){
     lineRight = true;
 
   } else {
@@ -306,11 +306,14 @@ void loop() {
 
 
   if(lineRight == false && lineLeft == false){  //if there's no black line detected
-    if(distanceRight < distanceLeft){
+    if(distanceRight < distanceLeft || distanceLeft < 40 || distanceRight < 40){
       turnCustom('l', 80, 65);        //if distance to wall is higher on the right, turn a bit to the left
 
-    } else if(distanceRight > distanceLeft){
+    } else if(distanceRight > distanceLeft || distanceLeft < 40 || distanceRight < 40){
       turnCustom('r', 80, 65);        //if distance to wall is higher on the right, turn a bit to the right
+
+    } else {
+      drive(100);
 
     }
   } else if(lineRight == true && lineLeft == false){  //if there's a black line on the right
