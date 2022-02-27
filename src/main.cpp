@@ -121,8 +121,8 @@ void read_tof_sensors() {
   // print sensor one reading
   Serial.print(F("Left: "));
   if(measureLeft.RangeStatus != 4) {     // if not out of range
-    Serial.print(measureLeft.RangeMilliMeter);
-    distanceLeft = measureLeft.RangeMilliMeter;
+    Serial.print(measureLeft.RangeMilliMeter * 10);
+    distanceLeft = measureLeft.RangeMilliMeter * 10;
   } else {
     Serial.print(F("Out of range"));
   }
@@ -132,8 +132,8 @@ void read_tof_sensors() {
   // print sensor two reading
   Serial.print(F("Right: "));
   if(measureRight.RangeStatus != 4) {
-    Serial.print(measureRight.RangeMilliMeter);
-    distanceRight = measureRight.RangeMilliMeter;
+    Serial.print(measureRight.RangeMilliMeter * 10);
+    distanceRight = measureRight.RangeMilliMeter * 10;
   } else {
     Serial.print(F("Out of range"));
   }
@@ -143,8 +143,8 @@ void read_tof_sensors() {
   // print sensor two reading
   Serial.print(F("Middle: "));
   if(measureMiddle.RangeStatus != 4) {
-    Serial.print(measureMiddle.RangeMilliMeter);
-    distanceMiddle = measureMiddle.RangeMilliMeter;
+    Serial.print(measureMiddle.RangeMilliMeter * 10);
+    distanceMiddle = measureMiddle.RangeMilliMeter * 10;
   } else {
     Serial.print(F("Out of range"));
   }
@@ -240,6 +240,14 @@ void setup() {
 
   // wait until serial port opens for native USB devices
 
+  pinMode(PWM_PIN_FORWARD_LEFT, OUTPUT);
+  pinMode(PWM_PIN_BACKWARD_LEFT, OUTPUT);
+  pinMode(ENABLE_PIN_LEFT_1, OUTPUT);
+
+  pinMode(PWM_PIN_FORWARD_RIGHT, OUTPUT);
+  pinMode(PWM_PIN_BACKWARD_RIGHT, OUTPUT);
+  pinMode(ENABLE_PIN_RIGHT_1, OUTPUT);
+
   pinMode(IR_SENSOR_LEFT, INPUT);
   pinMode(IR_SENSOR_RIGHT, INPUT);
 
@@ -265,6 +273,8 @@ void setup() {
   digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
   digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
 
+  Serial.println("Setup complete ");
+
 }
 
 void loop() {
@@ -272,10 +282,16 @@ void loop() {
   readHallSensors();
   readIRSensors();
 
+  Serial.println("Reading all Sensors");
+
   
   if(magnetDetectedLeft){             //if magnet is detected on the right
-    while(distanceRight < 400){        //while no curve is detected: drive forward
-      drive(75);
+
+    Serial.println("Magnet detected on the left");
+
+    while(distanceRight < 40){        //while no curve is detected: drive forward
+      drive(75); 
+      
     }
 
     delay(200);                       //keep driving forward for 0.2 seconds
@@ -289,7 +305,10 @@ void loop() {
     delay(500);
     
   } else if(magnetDetectedRight){     //if magnet is detected on the right   
-    while(distanceLeft < 400){         //while no curve is detected: drive forward
+
+    Serial.println("Magnet detected on the right");
+
+    while(distanceLeft < 40){         //while no curve is detected: drive forward
       drive(75);
     }
 
@@ -306,18 +325,33 @@ void loop() {
 
 
   if(lineRight == false && lineLeft == false){  //if there's no black line detected
+
+    Serial.println("No line detected");
+
     if(distanceRight < distanceLeft || distanceLeft < 40 || distanceRight < 40){
+
+      Serial.println("Distance left > distance right"); 
+
       turnCustom('l', 80, 65);        //if distance to wall is higher on the right, turn a bit to the left
 
     } else if(distanceRight > distanceLeft || distanceLeft < 40 || distanceRight < 40){
+
+      Serial.println("Distance left > distance right"); 
+
       turnCustom('r', 80, 65);        //if distance to wall is higher on the right, turn a bit to the right
 
     } else {
+
+      Serial.println("No wall on one side"); 
+
       drive(100);
 
     }
   } else if(lineRight == true && lineLeft == false){  //if there's a black line on the right
-    while(distanceRight < 400){         //while no curve is detected: drive forward
+
+    Serial.println("Line detected one the right"); 
+
+    while(distanceRight < 40){         //while no curve is detected: drive forward
       drive(75);
     }
 
@@ -333,7 +367,10 @@ void loop() {
 
 
   } else if(lineRight == false && lineLeft == true){
-    while(distanceLeft < 400){         //while no curve is detected: drive forward
+
+    Serial.println("Line detected one the left"); 
+
+    while(distanceLeft < 40){         //while no curve is detected: drive forward
       drive(75);
     }
 
@@ -351,13 +388,16 @@ void loop() {
 
 
   if(distanceMiddle < 30){
-    while(distanceLeft < 400 && distanceRight < 400){
+
+    Serial.println("Wall in front"); 
+
+    while(distanceLeft < 40 && distanceRight < 40){
       drive(75);
     }
 
     delay(200);                       //keep driving forward for 0.2 seconds
 
-    if(distanceLeft >= 400){
+    if(distanceLeft >= 40){
       rotate('l', 70);                  
 
       delay(500);                       //rotate for 0.5 seconds
@@ -366,7 +406,7 @@ void loop() {
 
       delay(500);
 
-    } else if(distanceRight >= 400){
+    } else if(distanceRight >= 40){
       rotate('r', 70);                  
 
       delay(500);                       //rotate for 0.5 seconds
