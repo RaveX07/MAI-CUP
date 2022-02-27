@@ -4,12 +4,12 @@
 //right motor
 #define PWM_PIN_FORWARD_RIGHT 5
 #define PWM_PIN_BACKWARD_RIGHT 4
-#define ENABLE_PIN_RIGHT_1 7
+#define ENABLE_PIN_RIGHT_1 6
 
 //left motor
 #define PWM_PIN_FORWARD_LEFT 9
 #define PWM_PIN_BACKWARD_LEFT 8
-#define ENABLE_PIN_LEFT_1 11
+#define ENABLE_PIN_LEFT_1 10
 
 //ir sensors 
 #define IR_SENSOR_LEFT A0
