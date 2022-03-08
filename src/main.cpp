@@ -65,7 +65,7 @@ VL53L0X_RangingMeasurementData_t measureMiddle;
     Keep sensor #1 awake, and now bring sensor #2 out of reset by setting its XSHUT pin high.
     Initialize sensor #2 with lox.begin(new_i2c_address) Pick any number but 0x29 and whatever you set the first sensor to
  */
-void setID() {
+void initTOFs() {
   // all reset
   digitalWrite(SHT_LOX_LEFT, LOW);    
   digitalWrite(SHT_LOX_RIGHT, LOW);
@@ -83,7 +83,7 @@ void setID() {
   digitalWrite(SHT_LOX_MIDDLE, LOW);
 
   // initing LOX1
-  if(!loxLeft.begin(LOX_ADDRESS_LEFT)) {
+  if(!loxLeft.begin()) {
     Serial.println(F("Failed to boot left VL53L0X"));
     while(1);
   }
@@ -95,7 +95,7 @@ void setID() {
   delay(10);
 
   //initing LOX2
-  if(!loxRight.begin(LOX_ADDRESS_RIGHT)) {
+  if(!loxRight.begin()) {
     Serial.println(F("Failed to boot right VL53L0X"));
     while(1);
   }
@@ -105,7 +105,7 @@ void setID() {
   delay(10);
 
   //initinh LOX 3
-  if(!loxMiddle.begin(LOX_ADDRESS_MIDDLE)) {
+  if(!loxMiddle.begin()) {
     Serial.println(F("Failed to boot middle VL53L0X"));
     while(1);
   }
@@ -195,6 +195,8 @@ void readHallSensors(){
 
 
 void drive(int speed){
+  digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
+  digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
   analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
   analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
   analogWrite(PWM_PIN_FORWARD_LEFT, speed);
@@ -268,7 +270,7 @@ void setup() {
   
   
   Serial.println(F("Starting TOF-Sensors..."));
-  setID();  
+  initTOFs();  
 
   digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
   digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
