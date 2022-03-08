@@ -290,17 +290,17 @@ void loop() {
     Serial.println("Magnet detected on the left");
 
     while(distanceRight < 40){        //while no curve is detected: drive forward
-      drive(75); 
+      drive(125); 
       
     }
 
     delay(200);                       //keep driving forward for 0.2 seconds
 
-    rotate('r', 70);
+    rotate('r', 100);
 
     delay(500);                       //rotate for 0.5 seconds
 
-    drive(75);                        //drive forward for 0.5 seconds
+    drive(125);                        //drive forward for 0.5 seconds
 
     delay(500);
     
@@ -309,16 +309,16 @@ void loop() {
     Serial.println("Magnet detected on the right");
 
     while(distanceLeft < 40){         //while no curve is detected: drive forward
-      drive(75);
+      drive(125);
     }
 
     delay(200);                       //keep driving forward for 0.2 seconds
 
-    rotate('l', 70);                  
+    rotate('l', 100);                  
 
     delay(500);                       //rotate for 0.5 seconds
 
-    drive(75);                        //drive forward for 0.5 seconds
+    drive(125);                        //drive forward for 0.5 seconds
 
     delay(500);
   }
@@ -332,13 +332,13 @@ void loop() {
 
       Serial.println("Distance left > distance right"); 
 
-      turnCustom('l', 80, 65);        //if distance to wall is higher on the right, turn a bit to the left
+      turnCustom('l', 125, 80);        //if distance to wall is higher on the right, turn a bit to the left
 
     } else if(distanceRight > distanceLeft || distanceLeft < 40 || distanceRight < 40){
 
       Serial.println("Distance left > distance right"); 
 
-      turnCustom('r', 80, 65);        //if distance to wall is higher on the right, turn a bit to the right
+      turnCustom('r', 125, 80);        //if distance to wall is higher on the right, turn a bit to the right
 
     } else {
 
@@ -352,16 +352,16 @@ void loop() {
     Serial.println("Line detected one the right"); 
 
     while(distanceRight < 40){         //while no curve is detected: drive forward
-      drive(75);
+      drive(125);
     }
 
     delay(200);                       //keep driving forward for 0.2 seconds
 
-    rotate('r', 70);                  
+    rotate('r', 100);                  
 
     delay(500);                       //rotate for 0.5 seconds
 
-    drive(75);                        //drive forward for 0.5 seconds
+    drive(125);                        //drive forward for 0.5 seconds
 
     delay(500);
 
@@ -371,16 +371,16 @@ void loop() {
     Serial.println("Line detected one the left"); 
 
     while(distanceLeft < 40){         //while no curve is detected: drive forward
-      drive(75);
+      drive(125);
     }
 
     delay(200);                       //keep driving forward for 0.2 seconds
 
-    rotate('l', 70);                  
+    rotate('l', 100);                  
 
     delay(500);                       //rotate for 0.5 seconds
 
-    drive(75);                        //drive forward for 0.5 seconds
+    drive(125);                        //drive forward for 0.5 seconds
 
     delay(500);
     
@@ -392,26 +392,26 @@ void loop() {
     Serial.println("Wall in front"); 
 
     while(distanceLeft < 40 && distanceRight < 40){
-      drive(75);
+      drive(125);
     }
 
     delay(200);                       //keep driving forward for 0.2 seconds
 
     if(distanceLeft >= 40){
-      rotate('l', 70);                  
+      rotate('l', 100);                  
 
       delay(500);                       //rotate for 0.5 seconds
 
-      drive(75);                        //drive forward for 0.5 seconds
+      drive(125);                        //drive forward for 0.5 seconds
 
       delay(500);
 
     } else if(distanceRight >= 40){
-      rotate('r', 70);                  
+      rotate('r', 100);                  
 
       delay(500);                       //rotate for 0.5 seconds
 
-      drive(75);                        //drive forward for 0.5 seconds
+      drive(125);                        //drive forward for 0.5 seconds
 
       delay(500);
 
