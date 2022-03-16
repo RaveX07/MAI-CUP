@@ -91,7 +91,6 @@ void initTOFs() {
 
   // activating LOX2 and resetting lOX 3
   digitalWrite(SHT_LOX_RIGHT, HIGH);
-  digitalWrite(SHT_LOX_MIDDLE, LOW);
   delay(10);
 
   //initing LOX2
