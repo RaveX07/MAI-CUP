@@ -41,9 +41,9 @@ int distanceMiddle = 0;
 #define LOX_ADDRESS_MIDDLE 0x54
 
 // set the pins to shutdown
-#define SHT_LOX_LEFT 22
-#define SHT_LOX_RIGHT 23
-#define SHT_LOX_MIDDLE 24
+#define SHT_LOX_LEFT 42
+#define SHT_LOX_RIGHT 44
+#define SHT_LOX_MIDDLE 40
 
 // objects for the vl53l0x
 Adafruit_VL53L0X loxLeft = Adafruit_VL53L0X();
@@ -83,7 +83,7 @@ void initTOFs() {
   digitalWrite(SHT_LOX_MIDDLE, LOW);
 
   // initing LOX1
-  if(!loxLeft.begin()) {
+  if(!loxLeft.begin(LOX_ADDRESS_LEFT)) {
     Serial.println(F("Failed to boot left VL53L0X"));
     while(1);
   }
@@ -94,7 +94,7 @@ void initTOFs() {
   delay(10);
 
   //initing LOX2
-  if(!loxRight.begin()) {
+  if(!loxRight.begin(LOX_ADDRESS_RIGHT)) {
     Serial.println(F("Failed to boot right VL53L0X"));
     while(1);
   }
@@ -104,7 +104,7 @@ void initTOFs() {
   delay(10);
 
   //initinh LOX 3
-  if(!loxMiddle.begin()) {
+  if(!loxMiddle.begin(LOX_ADDRESS_MIDDLE)) {
     Serial.println(F("Failed to boot middle VL53L0X"));
     while(1);
   }
