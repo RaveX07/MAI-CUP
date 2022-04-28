@@ -55,6 +55,7 @@ void setup()
         while (1) {}
     }
     sensorLeft.setAddress(LOX_ADDRESS_LEFT);
+    Serial.println("Initialized left Sensor");
 
     digitalWrite(SHT_LOX_MIDDLE, HIGH);
     sensorMiddle.setTimeout(500);
@@ -64,6 +65,7 @@ void setup()
         while (1) {}
     }
     sensorMiddle.setAddress(LOX_ADDRESS_MIDDLE);
+    Serial.println("Initialized middle Sensor");
 
     digitalWrite(SHT_LOX_RIGHT, HIGH);
     sensorRight.setTimeout(500);
@@ -73,6 +75,7 @@ void setup()
         while (1) {}
     }
     sensorRight.setAddress(LOX_ADDRESS_RIGHT);
+    Serial.println("Initialized right Sensor");
 
 #if defined LONG_RANGE
     // lower the return signal rate limit (default is 0.25 MCPS)

@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <Adafruit_VL53L0X.h>
 
 //right motor
 #define PWM_PIN_FORWARD_RIGHT 5
@@ -14,6 +13,13 @@
 //ir sensors 
 #define IR_SENSOR_LEFT A0
 #define IR_SENSOR_RIGHT A1
+
+//US-Sensors
+#define ECHO_MIDDLE 48
+#define TRIGGER_MIDDLE 50
+
+#define ECHO_RIGHT 49
+#define TRIGGER_RIGHT 51
 
 //variables for IR-Sensors
 int IRSensorLeft;
@@ -30,125 +36,47 @@ bool lineRight;
 bool magnetDetectedLeft = false;
 bool magnetDetectedRight = false;
 
-//variables for the TOF-Sensors
-int distanceLeft = 0;
-int distanceRight = 0;
-int distanceMiddle = 0;
+//variables for the US-Sensors
+const int SENSOR_MAX_RANGE = 300; // in cm
+unsigned long durationMiddle;
+unsigned int distanceMiddle;
 
-// address we will assign if dual sensor is present
-#define LOX_ADDRESS_LEFT 0x52
-#define LOX_ADDRESS_RIGHT 0x53
-#define LOX_ADDRESS_MIDDLE 0x54
+unsigned long durationRight;
+unsigned int distanceRight;
 
-// set the pins to shutdown
-#define SHT_LOX_LEFT 42
-#define SHT_LOX_RIGHT 44
-#define SHT_LOX_MIDDLE 40
+void readUSSensors(){
 
-// objects for the vl53l0x
-Adafruit_VL53L0X loxLeft = Adafruit_VL53L0X();
-Adafruit_VL53L0X loxMiddle = Adafruit_VL53L0X();
-Adafruit_VL53L0X loxRight = Adafruit_VL53L0X();
+  //read middle sensor
+  digitalWrite(TRIGGER_MIDDLE, LOW);
+  delayMicroseconds(2);
 
-// this holds the measurement
-VL53L0X_RangingMeasurementData_t measureLeft;
-VL53L0X_RangingMeasurementData_t measureRight;
-VL53L0X_RangingMeasurementData_t measureMiddle;
+  digitalWrite(TRIGGER_MIDDLE, HIGH);
+  delayMicroseconds(10);
 
+  durationMiddle = pulseIn(ECHO_MIDDLE, HIGH);
+  distanceMiddle = durationMiddle/58;
 
-
-/*
-    Reset all sensors by setting all of their XSHUT pins low for delay(10), then set all XSHUT high to bring out of reset
-    Keep sensor #1 awake by keeping XSHUT pin high
-    Put all other sensors into shutdown by pulling XSHUT pins low
-    Initialize sensor #1 with lox.begin(new_i2c_address) Pick any number but 0x29 and it must be under 0x7F. Going with 0x30 to 0x3F is probably OK.
-    Keep sensor #1 awake, and now bring sensor #2 out of reset by setting its XSHUT pin high.
-    Initialize sensor #2 with lox.begin(new_i2c_address) Pick any number but 0x29 and whatever you set the first sensor to
- */
-void initTOFs() {
-  // all reset
-  digitalWrite(SHT_LOX_LEFT, LOW);    
-  digitalWrite(SHT_LOX_RIGHT, LOW);
-  digitalWrite(SHT_LOX_MIDDLE, LOW);
-  delay(10);
-  // all unreset
-  digitalWrite(SHT_LOX_LEFT, HIGH);
-  digitalWrite(SHT_LOX_RIGHT, HIGH);
-  digitalWrite(SHT_LOX_MIDDLE, HIGH);
-  delay(10);
-
-  // activating LOX1 and resetting LOX2 and LOX3
-  digitalWrite(SHT_LOX_LEFT, HIGH);
-  digitalWrite(SHT_LOX_RIGHT, LOW);
-  digitalWrite(SHT_LOX_MIDDLE, LOW);
-
-  // initing LOX1
-  if(!loxLeft.begin(LOX_ADDRESS_LEFT)) {
-    Serial.println(F("Failed to boot left VL53L0X"));
-    while(1);
-  }
-  delay(10);
-
-  // activating LOX2 and resetting lOX 3
-  digitalWrite(SHT_LOX_RIGHT, HIGH);
-  delay(10);
-
-  //initing LOX2
-  if(!loxRight.begin(LOX_ADDRESS_RIGHT)) {
-    Serial.println(F("Failed to boot right VL53L0X"));
-    while(1);
-  }
-
-  //activating LOX 3
-  digitalWrite(SHT_LOX_MIDDLE, HIGH);
-  delay(10);
-
-  //initinh LOX 3
-  if(!loxMiddle.begin(LOX_ADDRESS_MIDDLE)) {
-    Serial.println(F("Failed to boot middle VL53L0X"));
-    while(1);
-  }
-
-}
-
-void read_tof_sensors() {
-  
-  loxLeft.rangingTest(&measureLeft, false); // pass in 'true' to get debug data printout!
-  loxRight.rangingTest(&measureRight, false); // pass in 'true' to get debug data printout!
-  loxMiddle.rangingTest(&measureMiddle, false); // pass in 'true' to get debug data printout!
-
-  // print sensor one reading
-  Serial.print(F("Left: "));
-  if(measureLeft.RangeStatus != 4) {     // if not out of range
-    Serial.print(measureLeft.RangeMilliMeter * 10);
-    distanceLeft = measureLeft.RangeMilliMeter * 10;
+  if (distanceMiddle > SENSOR_MAX_RANGE || distanceMiddle <= 0){
+    Serial.println("Out of sensor middle range!");
   } else {
-    Serial.print(F("Out of range"));
+    Serial.println("Distance to object middle: " + String(distanceMiddle) + " cm");
   }
-  
-  Serial.print(F(" "));
 
-  // print sensor two reading
-  Serial.print(F("Right: "));
-  if(measureRight.RangeStatus != 4) {
-    Serial.print(measureRight.RangeMilliMeter * 10);
-    distanceRight = measureRight.RangeMilliMeter * 10;
+  //read right sensor
+  digitalWrite(TRIGGER_RIGHT, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIGGER_RIGHT, HIGH);
+  delayMicroseconds(10);
+
+  durationRight = pulseIn(ECHO_RIGHT, HIGH);
+  distanceRight = durationRight/58;
+
+  if (distanceRight > SENSOR_MAX_RANGE || distanceRight <= 0){
+    Serial.println("Out of sensor right range!");
   } else {
-    Serial.print(F("Out of range"));
+    Serial.println("Distance to object right: " + String(distanceRight) + " cm");
   }
-
-  Serial.print(F(" "));
-
-  // print sensor two reading
-  Serial.print(F("Middle: "));
-  if(measureMiddle.RangeStatus != 4) {
-    Serial.print(measureMiddle.RangeMilliMeter * 10);
-    distanceMiddle = measureMiddle.RangeMilliMeter * 10;
-  } else {
-    Serial.print(F("Out of range"));
-  }
-  
-  Serial.println();
 }
 
 void readIRSensors(){
@@ -255,31 +183,17 @@ void setup() {
   pinMode(HALL_SENSOR_LEFT, INPUT);
   pinMode(HALL_SENSOR_RIGHT, INPUT);
 
-  pinMode(SHT_LOX_LEFT, OUTPUT);
-  pinMode(SHT_LOX_RIGHT, OUTPUT);
-  pinMode(SHT_LOX_MIDDLE, OUTPUT);
-
-  Serial.println(F("TOF-Sensors Shutdown pins inited..."));
-
-  digitalWrite(SHT_LOX_LEFT, LOW);
-  digitalWrite(SHT_LOX_RIGHT, LOW);
-  digitalWrite(SHT_LOX_MIDDLE, LOW);
-
-  Serial.println(F("All TOF-Sensors in reset mode...(pins are low)"));
-  
-  
-  Serial.println(F("Starting TOF-Sensors..."));
-  initTOFs();  
-
-  digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
-  digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
+  pinMode(TRIGGER_MIDDLE, OUTPUT);
+  pinMode(TRIGGER_RIGHT, OUTPUT);
+  pinMode(ECHO_MIDDLE, INPUT);
+  pinMode(ECHO_MIDDLE, INPUT);
 
   Serial.println("Setup complete ");
 
 }
 
 void loop() {
-  read_tof_sensors();                 //read all sensors
+  readUSSensors();                 //read all sensors
   readHallSensors();
   readIRSensors();
 
@@ -287,6 +201,8 @@ void loop() {
 
   
   if(magnetDetectedLeft){             //if magnet is detected on the right
+
+    digitalWrite(15, HIGH);
 
     Serial.println("Magnet detected on the left");
 
@@ -306,6 +222,8 @@ void loop() {
     delay(500);
     
   } else if(magnetDetectedRight){     //if magnet is detected on the right   
+
+    digitalWrite(15, HIGH);
 
     Serial.println("Magnet detected on the right");
 
@@ -329,13 +247,13 @@ void loop() {
 
     Serial.println("No line detected");
 
-    if(distanceRight < distanceLeft || distanceLeft < 40 || distanceRight < 40){
+    if(distanceRight < distanceLeft && distanceLeft < 40 && distanceRight < 40){
 
       Serial.println("Distance left > distance right"); 
 
       turnCustom('l', 125, 80);        //if distance to wall is higher on the right, turn a bit to the left
 
-    } else if(distanceRight > distanceLeft || distanceLeft < 40 || distanceRight < 40){
+    } else if(distanceRight > distanceLeft && distanceLeft < 40 && distanceRight < 40){
 
       Serial.println("Distance left > distance right"); 
 
