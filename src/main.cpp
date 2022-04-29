@@ -44,6 +44,9 @@ unsigned int distanceMiddle;
 unsigned long durationRight;
 unsigned int distanceRight;
 
+unsigned long durationLeft;
+unsigned int distanceLeft;
+
 void readUSSensors(){
 
   //read middle sensor
@@ -310,8 +313,9 @@ void loop() {
 
     Serial.println("Wall in front"); 
 
-    while(distanceLeft < 40 && distanceRight < 40){
+    while(distanceLeft < 40 && distanceRight < 40 && lineLeft == false && lineRight == false){
       drive(125);
+      readIRSensors();
     }
 
     delay(200);                       //keep driving forward for 0.2 seconds
@@ -334,9 +338,46 @@ void loop() {
 
       delay(500);
 
-    }
+    } else if(lineRight == false && lineLeft == true){
 
+      Serial.println("Line detected one the left"); 
+
+      while(distanceLeft < 40){         //while no curve is detected: drive forward
+        drive(125);
+      }
+
+      delay(200);                       //keep driving forward for 0.2 seconds
+
+      rotate('l', 100);                  
+
+      delay(500);                       //rotate for 0.5 seconds
+
+      drive(125);                        //drive forward for 0.5 seconds
+
+      delay(500);
+      
+    } else if(lineRight == true && lineLeft == false){
+
+      Serial.println("Line detected one the left"); 
+
+      while(distanceRight < 40){         //while no curve is detected: drive forward
+        drive(125);
+      }
+
+      delay(200);                       //keep driving forward for 0.2 seconds
+
+      rotate('r', 100);                  
+
+      delay(500);                       //rotate for 0.5 seconds
+
+      drive(125);                        //drive forward for 0.5 seconds
+
+      delay(500);
+      
+    }
+    
   }
+
   delay(50);
 
 }
