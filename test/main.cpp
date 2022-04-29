@@ -21,6 +21,21 @@
 #define ECHO_RIGHT 49
 #define TRIGGER_RIGHT 51
 
+#define ECHO_LEFT 38
+#define TRIGGER_LEFT 40
+
+
+//variables for the US-Sensors
+const int SENSOR_MAX_RANGE = 300; // in cm
+unsigned long durationMiddle;
+unsigned int distanceMiddle;
+
+unsigned long durationRight;
+unsigned int distanceRight;
+
+unsigned long durationLeft;
+unsigned int distanceLeft;
+
 //variables for IR-Sensors
 int IRSensorLeft;
 int IRSensorRight;
@@ -36,16 +51,6 @@ bool lineRight;
 bool magnetDetectedLeft = false;
 bool magnetDetectedRight = false;
 
-//variables for the US-Sensors
-const int SENSOR_MAX_RANGE = 300; // in cm
-unsigned long durationMiddle;
-unsigned int distanceMiddle;
-
-unsigned long durationRight;
-unsigned int distanceRight;
-
-unsigned long durationLeft;
-unsigned int distanceLeft;
 
 void readUSSensors(){
 
@@ -79,6 +84,22 @@ void readUSSensors(){
     Serial.println("Out of sensor right range!");
   } else {
     Serial.println("Distance to object right: " + String(distanceRight) + " cm");
+  }
+
+  //read left sensor
+  digitalWrite(TRIGGER_LEFT, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIGGER_LEFT, HIGH);
+  delayMicroseconds(10);
+
+  durationLeft = pulseIn(ECHO_LEFT, HIGH);
+  distanceLeft = durationLeft/58;
+
+  if (distanceLeft > SENSOR_MAX_RANGE || distanceLeft <= 0){
+    Serial.println("Out of sensor left range!");
+  } else {
+    Serial.println("Distance to object left: " + String(distanceLeft) + " cm");
   }
 }
 
