@@ -1,0 +1,8 @@
+{
+    "prettier.tabWidth": 4,
+    "editor.stickyTabStops": true,
+    "workbench.tree.indent": 4,
+    "workbench.editor.enablePreview": false,
+    "editor.detectIndentation": false,
+    "editor.tabSize": 4
+}
