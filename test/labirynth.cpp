@@ -111,10 +111,18 @@ void readIRSensors(){
 
 }
 
+void readAllSensors(){
+    readIRSensors();
+    readUSSensors();
+}
 
 
 
-void turn(){
+
+void turn(){  
+
+    int rotationTime = 550; 
+
 
     char direction;
     
@@ -135,29 +143,45 @@ void turn(){
     {
     case 'r':
 
-        rotate('r', 100);
+        rotate('r', 80);
 
-        delay(500); // rotate for 0.5 seconds
+        delay(rotationTime); // rotate for 0.5 seconds
 
-        drive(100); // drive forward for 0.5 seconds
+        drive(80); // drive forward for 0.5 seconds
 
-        delay(500);
-        break;
+        delay(1000);
     
     case 'l':
 
-        rotate('l', 100);
+        rotate('l', 80);
 
-        delay(500); // rotate for 0.5 seconds
+        delay(rotationTime); // rotate for 0.5 seconds
 
-        drive(100); // drive forward for 0.5 seconds
+        drive(80); // drive forward for 0.5 seconds
 
-        delay(500);
+        delay(1000);
 
     default:
         break;
     }
 
+}
+
+void balance(){
+    readAllSensors();
+    if (distanceRight < distanceLeft)
+    {
+
+        Serial.println("Distance left > distance right");
+
+        turnCustom('l', 80, 55); // if distance to wall is higher on the right, turn a bit to the left
+
+    } else if (distanceRight > distanceLeft) {
+
+        Serial.println("Distance left > distance right");
+
+        turnCustom('r', 80, 55); // if distance to wall is higher on the right, turn a bit to the right
+    }
 }
 
 
@@ -187,7 +211,11 @@ void setup(){
 }
 
 void loop(){
-    
-    
+
+    while(distanceFront > 45){
+        balance();
+    }
+
+    turn();
 
 }
