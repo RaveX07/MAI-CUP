@@ -1,5 +1,5 @@
 #include <SR04.h>
-#include "Arduino.h"
+#include <Arduino.h>
 int LED = 15;
 
 //right motor
@@ -42,10 +42,11 @@ int valueLeft = 0;
 bool lineLeft;
 bool lineRight;
 
+
 void drive(int speed){
   digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
   digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
-  analogWrite(PWM_PIN_FORWARD_RIGHT, speed*1.1);
+  analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
   analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
   analogWrite(PWM_PIN_FORWARD_LEFT, speed);
   analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
@@ -88,6 +89,14 @@ void turnCustom(char direction, int speedMax, int speedMin)
   }
 }
 
+void readUSSensors(){
+    distanceLeft = sr04.Distance();
+    distanceFront = sr05.Distance();
+    distanceRight = sr06.Distance();
+    Serial.println("left:" + String(distanceLeft) + "cm; front:" + String(distanceFront) + "cm; right:" + String(distanceRight) +  "cm");  
+}
+
+
 
 void readIRSensors(){
   valueLeft = analogRead(IRSensorLeft);
@@ -114,7 +123,10 @@ void readIRSensors(){
 
 
 
-void turn(){
+void turn(){  
+
+    int rotationTime = 550; 
+
 
     char direction;
     
@@ -135,36 +147,28 @@ void turn(){
     {
     case 'r':
 
-        rotate('r', 100);
+        rotate('r', 80);
 
-        delay(500); // rotate for 0.5 seconds
+        delay(rotationTime); // rotate for 0.5 seconds
 
-        drive(100); // drive forward for 0.5 seconds
+        drive(80); // drive forward for 0.5 seconds
 
-        delay(500);
-        break;
+        delay(1000);
     
     case 'l':
 
-        rotate('l', 100);
+        rotate('l', 80);
 
-        delay(500); // rotate for 0.5 seconds
+        delay(rotationTime); // rotate for 0.5 seconds
 
-        drive(100); // drive forward for 0.5 seconds
+        drive(80); // drive forward for 0.5 seconds
 
-        delay(500);
+        delay(1000);
 
     default:
         break;
     }
 
-}
-
-void readUSSensors(){
-    distanceLeft = sr04.Distance();
-    distanceFront = sr05.Distance();
-    distanceRight = sr06.Distance();
-    Serial.println("left:" + String(distanceLeft) + "cm; front:" + String(distanceFront) + "cm; right:" + String(distanceRight) +  "cm");  
 }
 
 void setup(){
