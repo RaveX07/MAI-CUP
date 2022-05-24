@@ -183,7 +183,7 @@ void balance(){
 
     } else if (distanceRight > distanceLeft) {
 
-        Serial.println("Distance left > distance right");
+        Serial.println("Distance left < distance right");
 
         turnCustom('r', 80, 55); // if distance to wall is higher on the right, turn a bit to the right
     }
