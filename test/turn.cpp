@@ -120,53 +120,66 @@ void readIRSensors(){
 
 }
 
+void balance(){
+    readAllSensors();
+    if (distanceRight < distanceLeft)
+    {
+
+        Serial.println("Distance left > distance right");
+
+        turnCustom('l', 80, 70); // if distance to wall is higher on the right, turn a bit to the left
+
+    } else if (distanceRight > distanceLeft) {
+
+        Serial.println("Distance left < distance right");
+
+        turnCustom('r', 80, 70); // if distance to wall is higher on the right, turn a bit to the right
+    }else {
+      drive(80);
+    }
+}
+
 
 
 
 void turn(){  
 
-    int rotationTime = 550; 
+    int rotationTime = 100; 
 
-
-    char direction;
     
     while (distanceRight < 40 && distanceLeft < 40)
     { // while no curve is detected: drive forward
-        drive(100);
-        readUSSensors();
-        readIRSensors();
+        balance();
+        readAllSensors();
     }
+    readAllSensors();
+    if(distanceLeft > 40){ 
+          drive(80);
+          
+          delay(300);//keep driving to avoid crashing in the wall
+  
+          rotate('l', 80);
+  
+          delay(550); // rotate for 0.5 seconds
+  
+          drive(80); 
+  
+          delay(300);
+    }else if(distanceRight > 40){
+        drive(80); 
 
-    if(distanceLeft > 40){
-        direction = 'l';
-    } else {
-        direction = 'r';
-    }
+        delay(300);//keep driving to avoid crashing in the wall
 
-    switch (direction)
-    {
-    case 'r':
-
-        rotate('r', 80);
+        while(distanceFront < 55){
+          rotate('r', 80);
+          readAllSensors();
+        }
 
         delay(rotationTime); // rotate for 0.5 seconds
 
         drive(80); // drive forward for 0.5 seconds
 
-        delay(1000);
-    
-    case 'l':
-
-        rotate('l', 80);
-
-        delay(rotationTime); // rotate for 0.5 seconds
-
-        drive(80); // drive forward for 0.5 seconds
-
-        delay(1000);
-
-    default:
-        break;
+        delay(300);
     }
 
 }
