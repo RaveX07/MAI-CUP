@@ -144,38 +144,41 @@ void balance(){
 
 void turn(){  
 
-    int rotationTime = 100; 
+    int rotationTime = 120; 
 
-    
-    while (distanceRight < 40 && distanceLeft < 40)
+    readAllSensors();
+    while (distanceRight < 40 && distanceLeft < 40 && distanceFront > 25)
     { // while no curve is detected: drive forward
         balance();
         readAllSensors();
     }
     readAllSensors();
-    if(distanceLeft > 40){ 
-          drive(80);
+    if(distanceLeft > 40 && distanceFront < 35){ 
+        drive(80);
           
-          delay(300);//keep driving to avoid crashing in the wall
+        delay(400);//keep driving to avoid crashing in the wall
   
-          rotate('l', 80);
-  
-          delay(550); // rotate for 0.5 seconds
-  
-          drive(80); 
-  
-          delay(300);
-    }else if(distanceRight > 40){
+        while(distanceFront < 55){
+            rotate('l', 80);
+            readAllSensors();
+        }
+
+        delay(rotationTime); 
+
+        drive(80); // drive forward for 0.5 seconds
+
+        delay(300);
+    }else if(distanceRight > 40 && distanceFront < 35){
         drive(80); 
 
-        delay(300);//keep driving to avoid crashing in the wall
+        delay(400);//keep driving to avoid crashing in the wall
 
         while(distanceFront < 55){
           rotate('r', 80);
           readAllSensors();
         }
 
-        delay(rotationTime); // rotate for 0.5 seconds
+        delay(rotationTime);
 
         drive(80); // drive forward for 0.5 seconds
 
