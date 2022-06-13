@@ -197,6 +197,7 @@ void turn(){
             turnCustom('r', 80, 70);
             readAllSensors();
         }
+        // these functions are for the case that there's a straight path to take but the bot can't balance out if there's no wall 
     }
 }
 
