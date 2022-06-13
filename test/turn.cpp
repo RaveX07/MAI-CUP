@@ -139,8 +139,10 @@ void balance(){
     }
 }
 
-
-
+void readAllSensors(){
+    readIRSensors();
+    readUSSensors();
+}
 
 void turn(){  
 
@@ -159,7 +161,7 @@ void turn(){
         delay(400);//keep driving to avoid crashing in the wall
   
         while(distanceFront < 55){
-            rotate('l', 80);
+            rotate('r', 80);
             readAllSensors();
         }
 
@@ -174,7 +176,7 @@ void turn(){
         delay(400);//keep driving to avoid crashing in the wall
 
         while(distanceFront < 55){
-          rotate('r', 80);
+          rotate('l', 80);
           readAllSensors();
         }
 
@@ -183,8 +185,19 @@ void turn(){
         drive(80); // drive forward for 0.5 seconds
 
         delay(300);
-    }
+    } else if(distanceLeft > 40 && distanceFront > 35){     // if no corner drive forward with a slight turn right
+        while(distanceLeft > 40){
 
+            turnCustom('l', 80, 70);
+            readAllSensors();
+        }
+    }else if(distanceRight > 40 && distanceFront < 35){     // if no corner drive forward with a slight turn left
+        while(distanceRight > 40){
+
+            turnCustom('r', 80, 70);
+            readAllSensors();
+        }
+    }
 }
 
 void setup(){
@@ -208,5 +221,5 @@ void setup(){
 void loop(){
 
     turn();
-
+     
 }
