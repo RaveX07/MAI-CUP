@@ -92,7 +92,7 @@ void turnCustom(char direction, int speedMax, int speedMin)
 void readIRSensors(){
   valueLeft = analogRead(IRSensorLeft);
   valueRight = analogRead(IRSensorRight);
-  Serial.print("IR LEFT:  " + valueLeft);
+  Serial.print("IR LEFT:  " + String(valueLeft));
   if (valueLeft >= 700){
     lineLeft = true;
     Serial.println("; line detected left");
@@ -100,7 +100,7 @@ void readIRSensors(){
     lineLeft = false;
     Serial.println("; no line detected left");
   }
-  Serial.print("IR RECHTS:  " + valueRight);
+  Serial.print("IR RECHTS:  " + String(valueRight));
   if (valueRight >= 700){
     lineRight = true;
     Serial.println("; line detected right");
