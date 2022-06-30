@@ -31,11 +31,11 @@ long distanceRight;
 SR04 sr06 = SR04(echoRight, triggerRight);
 
 // right IR sensor
-const int IRSensorRight = A1;
+const int IRSensorRight = A0;
 int valueRight = 0;
 
 //left IR sensor
-const int IRSensorLeft = A0;
+const int IRSensorLeft = A1;
 int valueLeft = 0;
 
 //variables for IR-Sensors
@@ -48,21 +48,21 @@ void drive(int speed){
   digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
   analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
   analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-  analogWrite(PWM_PIN_FORWARD_LEFT, speed);
+  analogWrite(PWM_PIN_FORWARD_LEFT, speed*0.92);
   analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
 
 }
 
 void rotate(char direction, int speed)
 {
-  if (direction == 'r')
+  if (direction == 'l')
   {
     analogWrite(PWM_PIN_FORWARD_RIGHT, 0);
     analogWrite(PWM_PIN_BACKWARD_RIGHT, speed);
     analogWrite(PWM_PIN_FORWARD_LEFT, speed);
     analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
   }
-  else if (direction == 'l')
+  else if (direction == 'r')
   {
     analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
     analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
@@ -101,7 +101,7 @@ void readUSSensors(){
 void readIRSensors(){
   valueLeft = analogRead(IRSensorLeft);
   valueRight = analogRead(IRSensorRight);
-  Serial.print(valueLeft);
+  Serial.print("LEFT:  " + String(valueLeft));
   if (valueLeft >= 700){
     lineLeft = true;
     Serial.println("; line detected left");
@@ -109,7 +109,7 @@ void readIRSensors(){
     lineLeft = false;
     Serial.println("; no line left");
   }
-  Serial.print(valueRight);
+  Serial.print("RIGHT:  " + String(valueRight));
   if (valueRight >= 700){
     lineRight = true;
     Serial.println("; line detected right");
@@ -127,15 +127,15 @@ void balance(){
 
         Serial.println("Distance left > distance right");
 
-        turnCustom('l', 80, 70); // if distance to wall is higher on the right, turn a bit to the left
+        turnCustom('l', 50, 40); // if distance to wall is higher on the right, turn a bit to the left
 
     } else if (distanceRight > distanceLeft) {
 
         Serial.println("Distance left < distance right");
 
-        turnCustom('r', 80, 70); // if distance to wall is higher on the right, turn a bit to the right
+        turnCustom('r', 50, 40); // if distance to wall is higher on the right, turn a bit to the right
     }else {
-      drive(80);
+      drive(50);
     }
 }
 
@@ -144,9 +144,49 @@ void readAllSensors(){
     readUSSensors();
 }
 
-void turn(){  
+void turn(char direction, int driveDelay){
+  if(direction == 'r'){
 
-    int rotationTime = 120; 
+    drive(50);
+          
+    delay(driveDelay);//keep driving to avoid crashing in the wall
+    
+    while(distanceFront < 55){
+        rotate('r', 50);
+        readAllSensors();
+    }
+
+    delay(120); 
+
+    drive(50); // drive forward for 0.5 seconds
+
+    delay(1000);
+
+    readAllSensors();
+    
+  } else if(direction == 'l'){
+
+    drive(50);
+          
+    delay(driveDelay);//keep driving to avoid crashing in the wall
+    
+    while(distanceFront < 55){
+        rotate('l', 50);
+        readAllSensors();
+    }
+
+    delay(120); 
+
+    drive(50); // drive forward for 0.5 seconds
+
+    delay(1000);
+
+    readAllSensors();
+    
+  }
+}
+
+void mainCode(){  
 
     readAllSensors();
     while (distanceRight < 40 && distanceLeft < 40 && distanceFront > 25)
@@ -155,49 +195,69 @@ void turn(){
         readAllSensors();
     }
     readAllSensors();
-    if(distanceLeft > 40 && distanceFront < 35){ 
-        drive(80);
-          
-        delay(400);//keep driving to avoid crashing in the wall
-  
-        while(distanceFront < 55){
-            rotate('r', 80);
-            readAllSensors();
-        }
-
-        delay(rotationTime); 
-
-        drive(80); // drive forward for 0.5 seconds
-
-        delay(300);
-    }else if(distanceRight > 40 && distanceFront < 35){
-        drive(80); 
-
-        delay(400);//keep driving to avoid crashing in the wall
-
-        while(distanceFront < 55){
-          rotate('l', 80);
-          readAllSensors();
-        }
-
-        delay(rotationTime);
-
-        drive(80); // drive forward for 0.5 seconds
-
-        delay(300);
-    } else if(distanceLeft > 40 && distanceFront > 35){     // if no corner drive forward with a slight turn right
-        while(distanceLeft > 40){
-
-            turnCustom('l', 80, 70);
-            readAllSensors();
-        }
-    }else if(distanceRight > 40 && distanceFront < 35){     // if no corner drive forward with a slight turn left
+    if(distanceLeft > 40 && distanceFront < 35){    // if in left corner turn left 
+        turn('l', 400);
+    }else if(distanceRight > 40 && distanceFront < 35){   //if in right corner turn right
+        turn('r', 400);
+    } else if(distanceRight > 40 && distanceFront < 35){     // if T-section drive vorward until in straight section again or it detects a line and rotates 
         while(distanceRight > 40){
 
-            turnCustom('r', 80, 70);
             readAllSensors();
+            
+            if(12 < distanceLeft < 14){
+              drive(50);
+              
+            } else if(distanceLeft > 13){
+              turnCustom('r', 50, 45);
+              
+            } else if(distanceLeft < 13){
+              turnCustom('l', 50, 45);
+              
+            }
+
+            if(lineRight == true){
+
+              drive(50);
+
+              delay(100);
+              
+              rotate('r', 50);
+
+              delay(500);
+    
+              turn('r', 0);
+            }
         }
-        // these functions are for the case that there's a straight path to take but the bot can't balance out if there's no wall 
+    } else if(distanceLeft > 40 && distanceFront > 35){   // if T-section drive vorward until in straight section again or it detects a line and rotates 
+        while(distanceLeft > 40){
+
+            readAllSensors();
+            
+            if(12 < distanceRight < 14){
+              drive(50);
+              
+            } else if(distanceRight > 13){
+              turnCustom('r', 50, 45);
+              
+            } else if(distanceRight < 13){
+              turnCustom('r', 50, 45);
+              
+            }
+
+            if(lineLeft == true){
+
+              drive(50);
+
+              delay(100);
+
+              rotate('l', 50);
+
+              delay(500);
+              
+              turn('l', 0);
+
+            }
+        }
     }
 }
 
@@ -221,6 +281,5 @@ void setup(){
 
 void loop(){
 
-    turn();
-     
+    mainCode();     
 }

@@ -92,21 +92,21 @@ void turnCustom(char direction, int speedMax, int speedMin)
 void readIRSensors(){
   valueLeft = analogRead(IRSensorLeft);
   valueRight = analogRead(IRSensorRight);
-  Serial.print(valueLeft);
+  Serial.print("IR LEFT:  " + String(valueLeft));
   if (valueLeft >= 700){
     lineLeft = true;
     Serial.println("; line detected left");
   } else {
     lineLeft = false;
-    Serial.println("; no line left");
+    Serial.println("; no line detected left");
   }
-  Serial.print(valueRight);
+  Serial.print("IR RECHTS:  " + String(valueRight));
   if (valueRight >= 700){
     lineRight = true;
     Serial.println("; line detected right");
   } else {
     lineRight = false;
-    Serial.println("; no line right");
+    Serial.println("; no line detected right");
   }
 
 }
@@ -115,13 +115,18 @@ void readUSSensors(){
     distanceLeft = sr04.Distance();
     distanceFront = sr05.Distance();
     distanceRight = sr06.Distance();
-    Serial.println("left:" + String(distanceLeft) + "cm; front:" + String(distanceFront) + "cm; right:" + String(distanceRight) +  "cm");  
+    Serial.println("left:" + String(distanceLeft) + "cm; front:" + String(distanceFront) + "cm; Right:" + String(distanceRight) +  "cm");  
 }
+
 
 void readAllSensors(){
     readIRSensors();
     readUSSensors();
+    Serial.println("############################################################################");
 }
+
+
+
 
 
 void turn(){  
@@ -142,7 +147,7 @@ void turn(){
   
           rotate('l', 80);
   
-          delay(550); // rotate for 0.5 seconds
+          delay(550); // rotate for 0.55 seconds
   
           drive(80); 
   
@@ -150,16 +155,16 @@ void turn(){
     }else if(distanceRight > 40){
         drive(80); 
 
-        delay(300);//keep driving to avoid crashing in the wall
+        delay(300);     //keep driving to avoid crashing in the wall
 
         while(distanceFront < 55){
           rotate('r', 80);
           readAllSensors();
         }
 
-        delay(rotationTime); // rotate for 0.5 seconds
+        delay(rotationTime); // keep rotating for x seconds
 
-        drive(80); // drive forward for 0.5 seconds
+        drive(80); // drive forward a bit
 
         delay(300);
     }
@@ -185,7 +190,6 @@ void balance(){
     }
 }
 
-
 void setup(){
     Serial.begin(9600);
     pinMode(PWM_PIN_FORWARD_LEFT, OUTPUT);
@@ -206,6 +210,8 @@ void setup(){
 
 void loop(){
 
-    balance();
+    readAllSensors();
+    
+    delay(100);
 
 }

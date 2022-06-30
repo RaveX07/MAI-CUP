@@ -54,14 +54,14 @@ void drive(int speed){
 
 void rotate(char direction, int speed)
 {
-  if (direction == 'r')
+  if (direction == 'l')
   {
     analogWrite(PWM_PIN_FORWARD_RIGHT, 0);
     analogWrite(PWM_PIN_BACKWARD_RIGHT, speed);
     analogWrite(PWM_PIN_FORWARD_LEFT, speed);
     analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
   }
-  else if (direction == 'l')
+  else if (direction == 'r')
   {
     analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
     analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
@@ -111,22 +111,18 @@ void readIRSensors(){
 
 }
 
-void readUSSensors(){
-    distanceLeft = sr04.Distance();
-    distanceFront = sr05.Distance();
-    distanceRight = sr06.Distance();
-    Serial.println("left:" + String(distanceLeft) + "cm; front:" + String(distanceFront) + "cm; right:" + String(distanceRight) +  "cm");  
-}
-
 void readAllSensors(){
     readIRSensors();
     readUSSensors();
 }
 
 
+
+
+
 void turn(){  
 
-    int rotationTime = 100; 
+    int rotationTime = 150; 
 
     
     while (distanceRight < 40 && distanceLeft < 40)
@@ -136,23 +132,26 @@ void turn(){
     }
     readAllSensors();
     if(distanceLeft > 40){ 
-          drive(80);
-          
-          delay(300);//keep driving to avoid crashing in the wall
-  
+         drive(80); 
+
+        delay(300);//keep driving to avoid crashing in the wall
+
+        while(distanceFront < 40){
           rotate('l', 80);
-  
-          delay(550); // rotate for 0.5 seconds
-  
-          drive(80); 
-  
-          delay(300);
+          readAllSensors();
+        }
+
+        delay(rotationTime); // rotate for 0.5 seconds
+
+        drive(80); // drive forward for 0.5 seconds
+
+        delay(500);
     }else if(distanceRight > 40){
         drive(80); 
 
         delay(300);//keep driving to avoid crashing in the wall
 
-        while(distanceFront < 55){
+        while(distanceFront < 40){
           rotate('r', 80);
           readAllSensors();
         }
@@ -161,7 +160,7 @@ void turn(){
 
         drive(80); // drive forward for 0.5 seconds
 
-        delay(300);
+        delay(500);
     }
 
 }
@@ -186,6 +185,13 @@ void balance(){
 }
 
 
+void readUSSensors(){
+    distanceLeft = sr04.Distance();
+    distanceFront = sr05.Distance();
+    distanceRight = sr06.Distance();
+    Serial.println("left:" + String(distanceLeft) + "cm; front:" + String(distanceFront) + "cm; right:" + String(distanceRight) +  "cm");  
+}
+
 void setup(){
     Serial.begin(9600);
     pinMode(PWM_PIN_FORWARD_LEFT, OUTPUT);
@@ -205,7 +211,6 @@ void setup(){
 }
 
 void loop(){
-
-    balance();
+    turn();
 
 }

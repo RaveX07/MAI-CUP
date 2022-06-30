@@ -54,14 +54,14 @@ void drive(int speed){
 
 void rotate(char direction, int speed)
 {
-  if (direction == 'r')
+  if (direction == 'l')
   {
     analogWrite(PWM_PIN_FORWARD_RIGHT, 0);
     analogWrite(PWM_PIN_BACKWARD_RIGHT, speed);
     analogWrite(PWM_PIN_FORWARD_LEFT, speed);
     analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
   }
-  else if (direction == 'l')
+  else if (direction == 'r')
   {
     analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
     analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
