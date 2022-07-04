@@ -42,13 +42,20 @@ int valueLeft = 0;
 bool lineLeft;
 bool lineRight;
 
+//Hall Sensors
+#define HALL_SENSORS_LEFT 12
+#define HALL_SENSORS_RIGHT 13
+
+int magnetRight = 0;
+int magnetLeft = 0;
+
 
 void drive(int speed){
   digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
   digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
   analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
   analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-  analogWrite(PWM_PIN_FORWARD_LEFT, speed*0.92);
+  analogWrite(PWM_PIN_FORWARD_LEFT, speed);
   analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
 
 }
@@ -89,6 +96,17 @@ void turnCustom(char direction, int speedMax, int speedMin)
   }
 }
 
+void readHallSensors(){
+    magnetLeft = digitalRead(HALL_SENSORS_LEFT);
+    magnetRight = digitalRead(HALL_SENSORS_RIGHT); 
+
+    if(magnetLeft == 1 || magnetRight == 1){
+        digitalWrite(15 , HIGH);
+    } else {
+        digitalWrite(15, LOW);
+    }
+}
+
 void readUSSensors(){
     distanceLeft = sr04.Distance();
     distanceFront = sr05.Distance();
@@ -120,6 +138,12 @@ void readIRSensors(){
 
 }
 
+void readAllSensors(){
+    readIRSensors();
+    readUSSensors();
+    readHallSensors();
+}
+
 void balance(){
     readAllSensors();
     if (distanceRight < distanceLeft)
@@ -127,38 +151,33 @@ void balance(){
 
         Serial.println("Distance left > distance right");
 
-        turnCustom('l', 50, 40); // if distance to wall is higher on the right, turn a bit to the left
+        turnCustom('l', 60, 55); // if distance to wall is higher on the right, turn a bit to the left
 
     } else if (distanceRight > distanceLeft) {
 
         Serial.println("Distance left < distance right");
 
-        turnCustom('r', 50, 40); // if distance to wall is higher on the right, turn a bit to the right
+        turnCustom('r', 60, 55); // if distance to wall is higher on the right, turn a bit to the right
     }else {
       drive(50);
     }
 }
 
-void readAllSensors(){
-    readIRSensors();
-    readUSSensors();
-}
-
 void turn(char direction, int driveDelay){
   if(direction == 'r'){
 
-    drive(50);
+    drive(60);
           
     delay(driveDelay);//keep driving to avoid crashing in the wall
     
     while(distanceFront < 55){
-        rotate('r', 50);
+        rotate('r', 60);
         readAllSensors();
     }
 
-    delay(120); 
+    delay(70); 
 
-    drive(50); // drive forward for 0.5 seconds
+    drive(60); // drive forward for 0.5 seconds
 
     delay(1000);
 
@@ -166,18 +185,18 @@ void turn(char direction, int driveDelay){
     
   } else if(direction == 'l'){
 
-    drive(50);
+    drive(60);
           
     delay(driveDelay);//keep driving to avoid crashing in the wall
     
     while(distanceFront < 55){
-        rotate('l', 50);
+        rotate('l', 60);
         readAllSensors();
     }
 
-    delay(120); 
+    delay(70); 
 
-    drive(50); // drive forward for 0.5 seconds
+    drive(60); // drive forward for 0.5 seconds
 
     delay(1000);
 
@@ -196,68 +215,9 @@ void mainCode(){
     }
     readAllSensors();
     if(distanceLeft > 40 && distanceFront < 35){    // if in left corner turn left 
-        turn('l', 400);
+        turn('l', 200);
     }else if(distanceRight > 40 && distanceFront < 35){   //if in right corner turn right
-        turn('r', 400);
-    } else if(distanceRight > 40 && distanceFront < 35){     // if T-section drive vorward until in straight section again or it detects a line and rotates 
-        while(distanceRight > 40){
-
-            readAllSensors();
-            
-            if(12 < distanceLeft < 14){
-              drive(50);
-              
-            } else if(distanceLeft > 13){
-              turnCustom('r', 50, 45);
-              
-            } else if(distanceLeft < 13){
-              turnCustom('l', 50, 45);
-              
-            }
-
-            if(lineRight == true){
-
-              drive(50);
-
-              delay(100);
-              
-              rotate('r', 50);
-
-              delay(500);
-    
-              turn('r', 0);
-            }
-        }
-    } else if(distanceLeft > 40 && distanceFront > 35){   // if T-section drive vorward until in straight section again or it detects a line and rotates 
-        while(distanceLeft > 40){
-
-            readAllSensors();
-            
-            if(12 < distanceRight < 14){
-              drive(50);
-              
-            } else if(distanceRight > 13){
-              turnCustom('r', 50, 45);
-              
-            } else if(distanceRight < 13){
-              turnCustom('r', 50, 45);
-              
-            }
-
-            if(lineLeft == true){
-
-              drive(50);
-
-              delay(100);
-
-              rotate('l', 50);
-
-              delay(500);
-              
-              turn('l', 0);
-
-            }
-        }
+        turn('r', 200);
     }
 }
 
