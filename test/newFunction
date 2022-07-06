@@ -42,11 +42,10 @@ int valueLeft = 0;
 bool lineLeft;
 bool lineRight;
 
-
 void drive(int speed){
   digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
   digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
-  analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
+  analogWrite(PWM_PIN_FORWARD_RIGHT, speed*1.1);
   analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
   analogWrite(PWM_PIN_FORWARD_LEFT, speed);
   analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
@@ -55,14 +54,14 @@ void drive(int speed){
 
 void rotate(char direction, int speed)
 {
-  if (direction == 'r')
+  if (direction == 'l')
   {
     analogWrite(PWM_PIN_FORWARD_RIGHT, 0);
     analogWrite(PWM_PIN_BACKWARD_RIGHT, speed);
     analogWrite(PWM_PIN_FORWARD_LEFT, speed);
     analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
   }
-  else if (direction == 'l')
+  else if (direction == 'r')
   {
     analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
     analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
@@ -89,14 +88,6 @@ void turnCustom(char direction, int speedMax, int speedMin)
   }
 }
 
-void readUSSensors(){
-    distanceLeft = sr04.Distance();
-    distanceFront = sr05.Distance();
-    distanceRight = sr06.Distance();
-    Serial.println("left:" + String(distanceLeft) + "cm; front:" + String(distanceFront) + "cm; right:" + String(distanceRight) +  "cm");  
-}
-
-
 
 void readIRSensors(){
   valueLeft = analogRead(IRSensorLeft);
@@ -120,23 +111,11 @@ void readIRSensors(){
 
 }
 
-void balance(){
-    readAllSensors();
-    if (distanceRight < distanceLeft)
-    {
-
-        Serial.println("Distance left > distance right");
-
-        turnCustom('l', 80, 70); // if distance to wall is higher on the right, turn a bit to the left
-
-    } else if (distanceRight > distanceLeft) {
-
-        Serial.println("Distance left < distance right");
-
-        turnCustom('r', 80, 70); // if distance to wall is higher on the right, turn a bit to the right
-    }else {
-      drive(80);
-    }
+void readUSSensors(){
+    distanceLeft = sr04.Distance();
+    distanceFront = sr05.Distance();
+    distanceRight = sr06.Distance();
+    Serial.println("left:" + String(distanceLeft) + "cm; front:" + String(distanceFront) + "cm; right:" + String(distanceRight) +  "cm");  
 }
 
 void readAllSensors(){
@@ -144,62 +123,67 @@ void readAllSensors(){
     readUSSensors();
 }
 
+void balance(){
+    readAllSensors();
+    if (distanceRight < distanceLeft)
+    {
+
+        Serial.println("Distance left > distance right");
+
+        turnCustom('l', 80, 65); // if distance to wall is higher on the right, turn a bit to the left
+
+    } else if (distanceRight > distanceLeft) {
+
+        Serial.println("Distance left < distance right");
+
+        turnCustom('r', 80, 65); // if distance to wall is higher on the right, turn a bit to the right
+    }else {
+      drive(80);
+    }
+}
+
 void turn(){  
 
-    int rotationTime = 120; 
+    int rotationTime = 100; 
 
-    readAllSensors();
-    while (distanceRight < 40 && distanceLeft < 40 && distanceFront > 25)
+    
+    while (distanceRight < 40 && distanceLeft < 40)
     { // while no curve is detected: drive forward
         balance();
         readAllSensors();
     }
     readAllSensors();
-    if(distanceLeft > 40 && distanceFront < 35){ 
-        drive(80);
+    if(distanceLeft > 40){ 
+          drive(80);
           
-        delay(400);//keep driving to avoid crashing in the wall
+          delay(300);//keep driving to avoid crashing in the wall
   
-        while(distanceFront < 55){
-            rotate('r', 80);
-            readAllSensors();
-        }
-
-        delay(rotationTime); 
-
-        drive(80); // drive forward for 0.5 seconds
-
-        delay(300);
-    }else if(distanceRight > 40 && distanceFront < 35){
+          rotate('l', 80);
+  
+          delay(550); // rotate for 0.5 seconds
+  
+          drive(80); 
+  
+          delay(300);
+    }else if(distanceRight > 40){
         drive(80); 
 
-        delay(400);//keep driving to avoid crashing in the wall
+        delay(300);//keep driving to avoid crashing in the wall
 
         while(distanceFront < 55){
-          rotate('l', 80);
+          rotate('r', 80);
           readAllSensors();
         }
 
-        delay(rotationTime);
+        delay(rotationTime); // rotate for 0.5 seconds
 
         drive(80); // drive forward for 0.5 seconds
 
         delay(300);
-    } else if(distanceLeft > 40 && distanceFront > 35){     // if no corner drive forward with a slight turn right
-        while(distanceLeft > 40){
-
-            turnCustom('l', 80, 70);
-            readAllSensors();
-        }
-    }else if(distanceRight > 40 && distanceFront < 35){     // if no corner drive forward with a slight turn left
-        while(distanceRight > 40){
-
-            turnCustom('r', 80, 70);
-            readAllSensors();
-        }
-        // these functions are for the case that there's a straight path to take but the bot can't balance out if there's no wall 
     }
+
 }
+
 
 void setup(){
     Serial.begin(9600);
@@ -220,7 +204,6 @@ void setup(){
 }
 
 void loop(){
-
-    turn();
-     
+  readAllSensors();
+  turn();
 }
