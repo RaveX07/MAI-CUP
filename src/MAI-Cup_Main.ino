@@ -64,38 +64,34 @@ void drive(int speed){
 
 void rotate(char direction, int speed)
 {
-  if (direction == 'l')
-  {
-    analogWrite(PWM_PIN_FORWARD_RIGHT, 0);
-    analogWrite(PWM_PIN_BACKWARD_RIGHT, speed);
-    analogWrite(PWM_PIN_FORWARD_LEFT, speed);
-    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
-  }
-  else if (direction == 'r')
-  {
-    analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
-    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-    analogWrite(PWM_PIN_FORWARD_LEFT, 0);
-    analogWrite(PWM_PIN_BACKWARD_LEFT, speed);
-  }
+    if (direction == 'l') {
+        analogWrite(PWM_PIN_FORWARD_RIGHT, 0);
+        analogWrite(PWM_PIN_BACKWARD_RIGHT, speed);
+        analogWrite(PWM_PIN_FORWARD_LEFT, speed);
+        analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
+    }
+    else if (direction == 'r') {
+        analogWrite(PWM_PIN_FORWARD_RIGHT, speed);
+        analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+        analogWrite(PWM_PIN_FORWARD_LEFT, 0);
+        analogWrite(PWM_PIN_BACKWARD_LEFT, speed);
+    }
 }
 
 void turnCustom(char direction, int speedMax, int speedMin)
 {
-  if (direction == 'l')
-  {
-    analogWrite(PWM_PIN_FORWARD_RIGHT, speedMin);
-    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-    analogWrite(PWM_PIN_FORWARD_LEFT, speedMax);
-    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
-  }
-  else if (direction == 'r')
-  {
-    analogWrite(PWM_PIN_FORWARD_RIGHT, speedMax);
-    analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
-    analogWrite(PWM_PIN_FORWARD_LEFT, speedMin);
-    analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
-  }
+    if (direction == 'l') {
+        analogWrite(PWM_PIN_FORWARD_RIGHT, speedMin);
+        analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+        analogWrite(PWM_PIN_FORWARD_LEFT, speedMax);
+        analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
+    }
+    else if (direction == 'r') {
+        analogWrite(PWM_PIN_FORWARD_RIGHT, speedMax);
+        analogWrite(PWM_PIN_BACKWARD_RIGHT, 0);
+        analogWrite(PWM_PIN_FORWARD_LEFT, speedMin);
+        analogWrite(PWM_PIN_BACKWARD_LEFT, 0);
+    }
 }
 
 void readHallSensors(){
@@ -119,24 +115,24 @@ void readUSSensors(){
 
 
 void readIRSensors(){
-  valueLeft = analogRead(IRSensorLeft);
-  valueRight = analogRead(IRSensorRight);
-  Serial.print("LEFT:  " + String(valueLeft));
-  if (valueLeft >= 700){
-    lineLeft = true;
-    Serial.println("; line detected left");
-  } else {
-    lineLeft = false;
-    Serial.println("; no line left");
-  }
-  Serial.print("RIGHT:  " + String(valueRight));
-  if (valueRight >= 700){
-    lineRight = true;
-    Serial.println("; line detected right");
-  } else {
-    lineRight = false;
-    Serial.println("; no line right");
-  }
+    valueLeft = analogRead(IRSensorLeft);
+    valueRight = analogRead(IRSensorRight);
+    Serial.print("LEFT:  " + String(valueLeft));
+    if (valueLeft >= 700){
+        lineLeft = true;
+        Serial.println("; line detected left");
+    } else {
+        lineLeft = false;
+        Serial.println("; no line left");
+    }
+    Serial.print("RIGHT:  " + String(valueRight));
+    if (valueRight >= 700){
+        lineRight = true;
+        Serial.println("; line detected right");
+    } else {
+        lineRight = false;
+        Serial.println("; no line right");
+    }
 
 }
 
@@ -165,12 +161,14 @@ void balance(){
     }
 }
 
-void turn(char direction){
+void turn(char direction, bool instant){
   if(direction == 'r'){
-
-    while(distanceFront > 17){
-      drive(60);
-      readAllSensors();
+    
+    if(instant == false){
+      while(distanceFront > 17){
+        drive(60);
+        readAllSensors();
+      }
     }
     
     while(distanceFront < 50){
@@ -190,10 +188,13 @@ void turn(char direction){
     
   } else if(direction == 'l'){
 
-    while(distanceFront > 17){
-      drive(50);
-      readAllSensors();
-    }          
+
+    if(instant == false){
+      while(distanceFront > 17){
+        drive(50);
+        readAllSensors();
+      }       
+    }   
     
     while(distanceFront < 50){
         rotate('l', 60);
@@ -222,29 +223,29 @@ void mainCode(){
         readAllSensors();
     }
     readAllSensors();
-    if(distanceLeft > 40 && distanceFront < 35 ){    // if in left corner turn left 
-        turn('l');
-    } else if(distanceRight > 40 && distanceFront < 35){   //if in right corner turn right
-        turn('r');
-    } else if(distanceRight > 40 && distanceFront < 35){     // if no corner drive forward with a slight turn left
+    if(distanceLeft > 40 && distanceRight < 40 && distanceFront < 35){    // if in left corner turn left 
+        turn('l', false);
+    } else if(distanceRight > 40 && distanceLeft < 40 && distanceFront < 35){   //if in right corner turn right
+        turn('r', false);
+    } else if(distanceRight > 40 && distanceFront > 35){     // if no corner drive forward with a slight turn left
         while(distanceRight > 40){
 
             readAllSensors();
             
             drive(60);
 
-//            if(lineRight == true){
-//
-//              drive(60);
-//
-//              delay(100);
-//              
-//              rotate('r', 60);
-//
-//              delay(500);
-//    
-//              turn('r', 0);
-//            }
+            if(lineRight == true){
+
+                drive(60);
+
+                delay(100);
+              
+                rotate('r', 60);
+
+                delay(500);
+        
+                turn('r', true);
+            }
         }
         // these functions are for the case that there's a straight path to take but the bot can't balance out if there's no wall 
     } else if(distanceLeft > 40 && distanceFront > 35){     // if no corner drive forward with a slight turn right
@@ -254,20 +255,49 @@ void mainCode(){
             
             drive(60);
 
-//            if(lineLeft == true){
-//
-//              drive(60);
-//
-//              delay(100);
-//
-//              rotate('l', 60);
-//
-//              delay(500);
-//              
-//              turn('l', 0);
-//
-//            }
+            if(lineLeft == true){
+
+                drive(60);
+
+                delay(100);
+
+                rotate('l', 60);
+
+                delay(500);
+                
+                turn('l', true);
+
+            }
         }
+    } else if(distanceLeft > 40 && distanceRight > 40 && distanceFront < 40){
+        while(!lineLeft && !lineRight){
+            drive(50);
+            readAllSensors();
+        }
+
+        if(lineLeft == true){
+
+            drive(60);
+
+            delay(100);
+
+            rotate('l', 60);
+
+            delay(500);
+              
+            turn('l', true);
+        
+        } else if(lineRight == true) {
+            drive(60);
+            
+            delay(100);
+
+            rotate('r', 60);
+
+            delay(500);
+
+            turn('r', true);
+        } 
     }
 }
 
