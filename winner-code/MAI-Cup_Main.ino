@@ -12,7 +12,7 @@ int LED = 15;
 #define PWM_PIN_BACKWARD_LEFT 9
 #define ENABLE_PIN_LEFT_1 10
 
-const int tolerance = 1.05;
+const int tolerance = 1.09;
 
 //left US sensor
 const int triggerLeft = 40;
@@ -98,7 +98,7 @@ void readHallSensors(){
     magnetLeft = digitalRead(HALL_SENSORS_LEFT);
     magnetRight = digitalRead(HALL_SENSORS_RIGHT); 
 
-    if(magnetLeft == 1 || magnetRight == 1){
+    if(magnetLeft == 0 || magnetRight == 0){
         digitalWrite(15 , HIGH);
     } else {
         digitalWrite(15, LOW);
@@ -118,7 +118,7 @@ void readIRSensors(){
     valueLeft = analogRead(IRSensorLeft);
     valueRight = analogRead(IRSensorRight);
     Serial.print("LEFT:  " + String(valueLeft));
-    if (valueLeft >= 700){
+    if (valueLeft >= 1000){
         lineLeft = true;
         Serial.println("; line detected left");
     } else {
@@ -126,7 +126,7 @@ void readIRSensors(){
         Serial.println("; no line left");
     }
     Serial.print("RIGHT:  " + String(valueRight));
-    if (valueRight >= 700){
+    if (valueRight >= 1000){
         lineRight = true;
         Serial.println("; line detected right");
     } else {
@@ -155,7 +155,7 @@ void balance(){
 
         Serial.println("Distance left < distance right");
 
-        turnCustom('r', 60, 55); // if distance to wall is higher on the right, turn a bit to the right
+        turnCustom('r', 60, 50); // if distance to wall is higher on the right, turn a bit to the right
     }else {
       drive(50);
     }
@@ -227,7 +227,7 @@ void mainCode(){
         turn('l', false);
     } else if(distanceRight > 40 && distanceLeft < 40 && distanceFront < 35){   //if in right corner turn right
         turn('r', false);
-    } else if(distanceRight > 40 && distanceFront > 35){     // if no corner drive forward with a slight turn left
+    } else if(distanceRight > 40 && distanceLeft < 40 && distanceFront > 35){     // if no corner drive forward with a slight turn left
         while(distanceRight > 40){
 
             readAllSensors();
@@ -248,13 +248,13 @@ void mainCode(){
             }
         }
         // these functions are for the case that there's a straight path to take but the bot can't balance out if there's no wall 
-    } else if(distanceLeft > 40 && distanceFront > 35){     // if no corner drive forward with a slight turn right
+    } else if(distanceLeft > 40 && distanceRight < 40 && distanceFront > 35){     // if no corner drive forward with a slight turn right
         while(distanceLeft > 40){
 
             readAllSensors();
             
             drive(60);
-
+            
             if(lineLeft == true){
 
                 drive(60);
@@ -276,7 +276,17 @@ void mainCode(){
         }
 
         if(lineLeft == true){
+            turn('l', false);     
+        } else if(lineRight == true) {
+            turn('r', false);
+        } 
+    } else if(distanceLeft > 40 && distanceRight > 40 && distanceFront > 40) {
+        while(!lineLeft && !lineRight && distanceLeft > 40 && distanceRight > 40){
+            drive(50);
+            readAllSensors();
+        }
 
+        if(lineLeft){
             drive(60);
 
             delay(100);
@@ -284,20 +294,21 @@ void mainCode(){
             rotate('l', 60);
 
             delay(500);
-              
+                
             turn('l', true);
-        
-        } else if(lineRight == true) {
+
+        } else if(lineRight){
             drive(60);
-            
+
             delay(100);
 
             rotate('r', 60);
 
             delay(500);
-
+                
             turn('r', true);
-        } 
+
+        }
     }
 }
 
@@ -315,6 +326,8 @@ void setup(){
     digitalWrite(ENABLE_PIN_RIGHT_1, HIGH);
 
     pinMode(LED, OUTPUT);
+
+    digitalWrite(15, LOW);
 
     Serial.println("Setup complete ");
 }
