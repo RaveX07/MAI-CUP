@@ -42,6 +42,13 @@ int valueLeft = 0;
 bool lineLeft;
 bool lineRight;
 
+//Hall Sensors
+#define HALL_SENSORS_LEFT 12
+#define HALL_SENSORS_RIGHT 13
+
+int magnetRight = 0;
+int magnetLeft = 0;
+
 
 void drive(int speed){
   digitalWrite(ENABLE_PIN_LEFT_1, HIGH);
@@ -89,6 +96,17 @@ void turnCustom(char direction, int speedMax, int speedMin)
   }
 }
 
+void readHallSensors(){
+    magnetLeft = digitalRead(HALL_SENSORS_LEFT);
+    magnetRight = digitalRead(HALL_SENSORS_RIGHT); 
+
+    if(magnetLeft == 1 || magnetRight == 1){
+        digitalWrite(15 , HIGH);
+    } else {
+        digitalWrite(15, LOW);
+    }
+}
+
 void readUSSensors(){
     distanceLeft = sr04.Distance();
     distanceFront = sr05.Distance();
@@ -120,6 +138,12 @@ void readIRSensors(){
 
 }
 
+void readAllSensors(){
+    readIRSensors();
+    readUSSensors();
+    readHallSensors();
+}
+
 void balance(){
     readAllSensors();
     if (distanceRight < distanceLeft)
@@ -127,38 +151,33 @@ void balance(){
 
         Serial.println("Distance left > distance right");
 
-        turnCustom('l', 80, 75); // if distance to wall is higher on the right, turn a bit to the left
+        turnCustom('l', 60, 55); // if distance to wall is higher on the right, turn a bit to the left
 
     } else if (distanceRight > distanceLeft) {
 
         Serial.println("Distance left < distance right");
 
-        turnCustom('r', 80, 75); // if distance to wall is higher on the right, turn a bit to the right
+        turnCustom('r', 60, 55); // if distance to wall is higher on the right, turn a bit to the right
     }else {
       drive(50);
     }
 }
 
-void readAllSensors(){
-    readIRSensors();
-    readUSSensors();
-}
-
 void turn(char direction, int driveDelay){
   if(direction == 'r'){
 
-    drive(80);
+    drive(60);
           
     delay(driveDelay);//keep driving to avoid crashing in the wall
     
     while(distanceFront < 55){
-        rotate('r', 80);
+        rotate('r', 60);
         readAllSensors();
     }
 
-    delay(120); 
+    delay(70); 
 
-    drive(80); // drive forward for 0.5 seconds
+    drive(60); // drive forward for 0.5 seconds
 
     delay(1000);
 
@@ -166,18 +185,18 @@ void turn(char direction, int driveDelay){
     
   } else if(direction == 'l'){
 
-    drive(80);
+    drive(60);
           
     delay(driveDelay);//keep driving to avoid crashing in the wall
     
     while(distanceFront < 55){
-        rotate('l', 80);
+        rotate('l', 60);
         readAllSensors();
     }
 
-    delay(120); 
+    delay(70); 
 
-    drive(80); // drive forward for 0.5 seconds
+    drive(60); // drive forward for 0.5 seconds
 
     delay(1000);
 
@@ -196,9 +215,9 @@ void mainCode(){
     }
     readAllSensors();
     if(distanceLeft > 40 && distanceFront < 35){    // if in left corner turn left 
-        turn('l', 400);
+        turn('l', 200);
     }else if(distanceRight > 40 && distanceFront < 35){   //if in right corner turn right
-        turn('r', 400);
+        turn('r', 200);
     }
 }
 

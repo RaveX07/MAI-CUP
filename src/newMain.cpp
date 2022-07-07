@@ -218,6 +218,65 @@ void mainCode(){
         turn('l', 200);
     }else if(distanceRight > 40 && distanceFront < 35){   //if in right corner turn right
         turn('r', 200);
+    } else if(distanceRight > 40 && distanceFront < 35){     // if T-section drive vorward until in straight section again or it detects a line and rotates 
+        while(distanceRight > 40){
+
+            readAllSensors();
+            
+            if(12 < distanceLeft < 14){
+              drive(50);
+              
+            } else if(distanceLeft > 13){
+              turnCustom('r', 50, 45);
+              
+            } else if(distanceLeft < 13){
+              turnCustom('l', 50, 45);
+              
+            }
+
+            if(lineRight == true){
+
+              drive(50);
+
+              delay(100);
+              
+              rotate('r', 50);
+
+              delay(500);
+    
+              turn('r', 0);
+            }
+        }
+    } else if(distanceLeft > 40 && distanceFront > 35){   // if T-section drive vorward until in straight section again or it detects a line and rotates 
+        while(distanceLeft > 40){
+
+            readAllSensors();
+            
+            if(12 < distanceRight < 14){
+              drive(50);
+              
+            } else if(distanceRight > 13){
+              turnCustom('r', 50, 45);
+              
+            } else if(distanceRight < 13){
+              turnCustom('r', 50, 45);
+              
+            }
+
+            if(lineLeft == true){
+
+              drive(50);
+
+              delay(100);
+
+              rotate('l', 50);
+
+              delay(500);
+              
+              turn('l', 0);
+
+            }
+        }
     }
 }
 
