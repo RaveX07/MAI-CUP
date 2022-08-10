@@ -12,7 +12,9 @@ int LED = 15;
 #define PWM_PIN_BACKWARD_LEFT 9
 #define ENABLE_PIN_LEFT_1 10
 
-const int tolerance = 1.09;
+const int tolerance = 1.07;
+
+int x = 0;
 
 //left US sensor
 const int triggerLeft = 40;
@@ -100,8 +102,6 @@ void readHallSensors(){
 
     if(magnetLeft == 0 || magnetRight == 0){
         digitalWrite(15 , HIGH);
-    } else {
-        digitalWrite(15, LOW);
     }
 }
 
@@ -118,22 +118,15 @@ void readIRSensors(){
     valueLeft = analogRead(IRSensorLeft);
     valueRight = analogRead(IRSensorRight);
     Serial.print("LEFT:  " + String(valueLeft));
-    if (valueLeft >= 1000){
-        lineLeft = true;
-        Serial.println("; line detected left");
-    } else {
-        lineLeft = false;
-        Serial.println("; no line left");
-    }
-    Serial.print("RIGHT:  " + String(valueRight));
-    if (valueRight >= 1000){
-        lineRight = true;
-        Serial.println("; line detected right");
-    } else {
-        lineRight = false;
-        Serial.println("; no line right");
-    }
-
+//    if (valueLeft >= 1023 && valueRight >= 1023){
+//        if(distanceFront < 35){
+//            delay(1000);
+//            while(true){
+//                drive(0);
+//                delay(1000);
+//            }
+//        }
+//    }
 }
 
 void readAllSensors(){
@@ -149,69 +142,79 @@ void balance(){
 
         Serial.println("Distance left > distance right");
 
-        turnCustom('l', 60, 55); // if distance to wall is higher on the right, turn a bit to the left
+        turnCustom('l', 50, 46); // if distance to wall is higher on the right, turn a bit to the left
 
     } else if (distanceRight > distanceLeft) {
 
         Serial.println("Distance left < distance right");
 
-        turnCustom('r', 60, 50); // if distance to wall is higher on the right, turn a bit to the right
+        turnCustom('r', 50, 41); // if distance to wall is higher on the right, turn a bit to the right
     }else {
       drive(50);
     }
 }
 
 void turn(char direction, bool instant){
-  if(direction == 'r'){
+    if (x < 3){
+  
+        if(direction == 'r'){
+        
+        if(instant == false){
+            while(distanceFront > 15){
+            drive(50);
+            readAllSensors();
+            }
+        }
+        
+        while(distanceFront < 50){
+            rotate('r', 50);
+            readAllSensors();
+        }
     
-    if(instant == false){
-      while(distanceFront > 17){
-        drive(60);
-        readAllSensors();
-      }
-    }
+        delay(200); 
     
-    while(distanceFront < 50){
-        rotate('r', 60);
-        readAllSensors();
-    }
-
-    delay(80); 
-
-    drive(60);
-
-    while(distanceRight > 35){
-      readAllSensors();
-    }
-
-    readAllSensors();
-    
-  } else if(direction == 'l'){
-
-
-    if(instant == false){
-      while(distanceFront > 17){
         drive(50);
-        readAllSensors();
-      }       
-    }   
     
-    while(distanceFront < 50){
-        rotate('l', 60);
-        readAllSensors();
-    }
-
-    delay(90); 
-
-    drive(60);
-
-    while(distanceLeft > 35){
-      readAllSensors();
-    }
-
-    readAllSensors();
+        while(distanceRight > 35){
+            readAllSensors();
+        }
     
-  }
+        readAllSensors();
+        
+        } else if(direction == 'l'){
+    
+    
+        if(instant == false){
+            while(distanceFront > 15){
+            drive(50);
+            readAllSensors();
+            }       
+        }   
+        
+        while(distanceFront < 50){
+            rotate('l', 50);
+            readAllSensors();
+        }
+    
+        delay(200); 
+    
+        drive(50);
+    
+        while(distanceLeft > 35){
+            readAllSensors();
+        }
+    
+        readAllSensors();
+        
+        }
+
+        x ++;
+    }else {
+        while(true){
+            drive(0);
+            delay(100000);
+        }
+    }
 }
 
 void mainCode(){  
@@ -232,15 +235,15 @@ void mainCode(){
 
             readAllSensors();
             
-            drive(60);
+            drive(50);
 
             if(lineRight == true){
 
-                drive(60);
+                drive(50);
 
                 delay(100);
               
-                rotate('r', 60);
+                rotate('r', 50);
 
                 delay(500);
         
@@ -253,15 +256,15 @@ void mainCode(){
 
             readAllSensors();
             
-            drive(60);
+            drive(50);
             
             if(lineLeft == true){
 
-                drive(60);
+                drive(50);
 
                 delay(100);
 
-                rotate('l', 60);
+                rotate('l', 50);
 
                 delay(500);
                 
@@ -280,40 +283,11 @@ void mainCode(){
         } else if(lineRight == true) {
             turn('r', false);
         } 
-    } else if(distanceLeft > 40 && distanceRight > 40 && distanceFront > 40) {
-        while(!lineLeft && !lineRight && distanceLeft > 40 && distanceRight > 40){
-            drive(50);
-            readAllSensors();
-        }
-
-        if(lineLeft){
-            drive(60);
-
-            delay(100);
-
-            rotate('l', 60);
-
-            delay(500);
-                
-            turn('l', true);
-
-        } else if(lineRight){
-            drive(60);
-
-            delay(100);
-
-            rotate('r', 60);
-
-            delay(500);
-                
-            turn('r', true);
-
-        }
-    }
+    } 
 }
 
 void setup(){
-    Serial.begin(9600);
+    Serial.begin(9500);
     pinMode(PWM_PIN_FORWARD_LEFT, OUTPUT);
     pinMode(PWM_PIN_BACKWARD_LEFT, OUTPUT);
     pinMode(ENABLE_PIN_LEFT_1, OUTPUT);
@@ -330,6 +304,10 @@ void setup(){
     digitalWrite(15, LOW);
 
     Serial.println("Setup complete ");
+
+    drive(40);
+
+    delay(1500);
 }
 
 void loop(){
